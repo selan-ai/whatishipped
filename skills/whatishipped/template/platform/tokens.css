@@ -1,0 +1,22 @@
+/*
+ * Read from <the app's token files>: every colour, size and text style the app defines, as custom properties and
+ * .t-* classes, under names close to the code's. Fonts and images are copied into this folder's assets/ and named
+ * from it (url("assets/...")), so the brandbook stands alone.
+ */
+/* @font-face { font-family: "Inter"; font-weight: 400; src: url("assets/fonts/Inter-Regular.ttf"); } */
+
+:root {
+  /* What every screen stands on, as the code paints it: a colour, or the gradient the code draws. */
+  --screen-ground: #000;
+  --screen-ink: #fff;
+  --screen-font: system-ui, sans-serif;
+  --screen-margin: 16px;
+  /* Where the page starts under the status bar and the app's top bar, and how far its foot clears the tab bar. */
+  --body-top: 110px;
+  --body-bottom: 120px;
+  /* The top bar's own backing, if the app gives it one; transparent if the page shows through. */
+  --bar-back: transparent;
+  /* The status bar's and the home indicator's ink over this app's ground. */
+  --status-ink: #fff;
+  --home-ink: #fff;
+}

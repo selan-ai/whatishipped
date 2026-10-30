@@ -1,0 +1,45 @@
+/*
+ * The phone a screen stands in, at the size of the device the app's UI tests run on (Foundations.device sets
+ * --phone-w and --phone-h). Defaults: iOS 393 × 852 with a 54 status bar, Android 412 × 915 with a 40 one.
+ * The app's own ground is --screen-ground (tokens.css).
+ */
+:root { --phone-w: 393px; --phone-h: 852px; --status-h: 54px; }
+[data-platform="android"] { --phone-w: 412px; --phone-h: 915px; --status-h: 40px; }
+
+.phone { position: relative; width: var(--phone-w); height: var(--phone-h); overflow: hidden; background: var(--screen-ground, #000); color: var(--screen-ink, #fff); font-family: var(--screen-font, system-ui); }
+.phone--ios { border-radius: 55px; box-shadow: 0 0 0 10px #050608, 0 0 0 11px #2b2f38, 0 30px 60px rgba(0, 0, 0, 0.5); }
+.phone--android { border-radius: 36px; box-shadow: 0 0 0 9px #050608, 0 0 0 10px #2b2f38, 0 30px 60px rgba(0, 0, 0, 0.5); }
+
+/* The bar region over the page; the page runs on under it. --bar-back is the app's own bar backing, if it has one. */
+.phone__top { position: absolute; top: 0; left: 0; right: 0; z-index: 5; background: var(--bar-back, transparent); }
+.phone__top--bare { background: none; }
+/* Scrolled under the bar: the app's own edge (iOS 26's hard scroll edge, a Material bar's scrolled colour). */
+.phone__top--scrolled { background: var(--bar-back-scrolled, var(--bar-back, transparent)); }
+.phone__status { display: flex; align-items: center; justify-content: space-between; color: var(--status-ink, #fff); }
+.phone--ios .phone__status { height: var(--status-h); padding: 4px 32px 0 52px; font: 600 17px -apple-system, BlinkMacSystemFont, sans-serif; letter-spacing: -0.4px; }
+.phone--android .phone__status { height: var(--status-h); padding: 0 22px 0 24px; font: 500 14px Roboto, system-ui, sans-serif; }
+.phone__island { position: absolute; left: 50%; top: 11px; transform: translateX(-50%); width: 124px; height: 36px; border-radius: 20px; background: #000; }
+.phone__punch { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); width: 16px; height: 16px; border-radius: 50%; background: #000; }
+.phone__icons { display: flex; gap: 6px; align-items: center; }
+
+.phone__body { position: absolute; inset: 0; padding: var(--body-top, 110px) var(--screen-margin, 16px) var(--body-bottom, 120px); overflow: hidden; }
+/* The page is at least as tall as the room between the bars, --page-h, so a foot can be pinned: a column with
+   min-height: var(--page-h) and margin-top: auto on its foot (SwiftUI's Spacer, Compose's weight). */
+.phone__page { --page-h: calc(var(--phone-h) - var(--body-top, 110px) - var(--body-bottom, 120px)); min-height: var(--page-h); }
+.phone__tabs { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; }
+.phone__bottom { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; }
+/* A toast or snackbar sits just above whatever the screen keeps at its foot (tab bar, mini player): --toast-bottom, else --body-bottom. */
+.phone__toast { position: absolute; left: 16px; right: 16px; bottom: var(--toast-bottom, var(--body-bottom, 120px)); display: flex; justify-content: center; z-index: 7; }
+.phone__dim { position: absolute; inset: 0; background: var(--scrim, rgba(0, 0, 0, 0.36)); z-index: 8; }
+.phone__sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 9; }
+.phone__dim--over { z-index: 10; }
+.phone__banner { position: absolute; left: 8px; right: 8px; top: calc(var(--status-h) + 4px); z-index: 11; }
+.phone--landscape { width: var(--phone-h); height: var(--phone-w); }
+/* A sheet's own backing; set --sheet-back to the app's. */
+.phone__sheet > * { background: var(--sheet-back, transparent); }
+.phone__over { position: absolute; inset: 0; z-index: 11; display: grid; place-items: center; padding: 24px; }
+.phone--ios .phone__home { position: absolute; left: 50%; bottom: var(--home-bottom, 8px); transform: translateX(-50%); width: var(--home-w, 139px); height: var(--home-h, 5px); border-radius: 3px; background: var(--home-ink, #fff); z-index: 10; }
+.phone--android .phone__home { position: absolute; left: 50%; bottom: var(--home-bottom, 8px); transform: translateX(-50%); width: var(--home-w, 108px); height: var(--home-h, 4px); border-radius: 2px; background: var(--home-ink, #fff); opacity: 0.8; z-index: 10; }
+
+/* The cutout sits on the long edge in landscape, where the status bar is not drawn as such. */
+.phone--landscape .phone__punch, .phone--landscape .phone__island { display: none; }

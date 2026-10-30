@@ -1,0 +1,9 @@
+{
+  "name": "App",
+  "sub": "Brandbook recreated from the app's code",
+  "platforms": [
+    { "id": "ios", "label": "iOS", "repo": "/absolute/path/to/the/ios/repo", "web": "https://gitlab.com/<group>/<repo>/-/blob/<commit>/" },
+    { "id": "android", "label": "Android", "repo": "/absolute/path/to/the/android/repo", "web": "https://github.com/<org>/<repo>/blob/<commit>/" }
+  ],
+  "same": [["ios:player-view", "android:player"]]
+}

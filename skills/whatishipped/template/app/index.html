@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brandbook</title>
+  <script>
+    /* A platform's own files name fonts and images relative to its folder; the page's address is deeper than that. */
+    { const p = location.pathname.split('/')[1]; if (p) document.write(`<base href="/${p}/">`); }
+  </script>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/app/board.css">
+  <link rel="stylesheet" href="/app/frame.css">
+</head>
+<body>
+  <div id="app" class="b-app"><div class="b-loading">Reading the board…</div></div>
+  <script type="module" src="/app/shell.ts"></script>
+</body>
+</html>
