@@ -95,9 +95,12 @@ The brandbook is a folder with a small Node server and no dependencies:
 ```sh
 cd ~/brandbooks/acme && npm start      # http://localhost:4321, Node 22.18 or later
 docker build -t brandbook . && docker run -p 8080:8080 brandbook
+npm run build                          # static files in dist/, for any host that serves a folder
 ```
 
-Everything in the folder is served, the screenshots too. Keep a person's own account out of anything you host.
+We host ours on Cloudflare: `dist/` as a Worker with only static assets, and Cloudflare Access on its hostname so only
+the team can open it. Everything in the folder is served, the screenshots too. Keep a person's own account out of
+anything you host.
 
 ## What it needs
 

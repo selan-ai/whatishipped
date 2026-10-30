@@ -6,7 +6,6 @@ What we would build next. None of it is promised; an issue saying which you want
 - **Drift in CI.** Run `--compare` on every merge request against the new UI test screenshots, and say which screens
   the change moved and by how much.
 - **What changed between releases.** Two commits drawn side by side: the screens, states and tokens that differ.
-- **A static build.** The brandbook as plain files for GitHub Pages or any bucket, with no server.
 - **Variants as states.** Light mode, large text, right-to-left and tablets, each drawn and matched like any state.
 - **Accessibility from the drawing.** Contrast of every text and ground the screens actually pair, and touch targets
   under 44 points.

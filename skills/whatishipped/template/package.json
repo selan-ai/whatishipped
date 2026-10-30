@@ -1,6 +1,6 @@
 {
   "name": "brandbook",
-  "version": "2026.10.30.2",
+  "version": "2026.10.30.4",
   "private": true,
   "type": "module",
   "description": "A design board recreated from an app's code: every screen, state, component and journey, per platform.",
@@ -9,6 +9,7 @@
   },
   "scripts": {
     "start": "node --disable-warning=ExperimentalWarning server.ts",
+    "build": "node --disable-warning=ExperimentalWarning server/build.ts",
     "check": "node --disable-warning=ExperimentalWarning server/check.ts",
     "capture": "node --disable-warning=ExperimentalWarning server/capture.ts"
   }

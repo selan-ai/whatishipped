@@ -41,7 +41,7 @@ if (base) urls.push(...(await every(base, deep)));
 
 /* Every page the brandbook has, from its index. */
 async function every(root: string, components: boolean) {
-  const index = await (await fetch(`${root}/api/index`)).json() as Index;
+  const index = await (await fetch(`${root}/api/index.json`)).json() as Index;
   const out = [`${root}/`];
   for (const p of index.platforms) {
     const at = `${root}/${p.id}`;
@@ -123,7 +123,7 @@ async function pages() {
 
 /* Each state refs.json pairs with a screenshot, drawn alone at the screenshot's size and set beside it. */
 async function measure(root: string) {
-  const index = await (await fetch(`${root}/api/index`)).json() as Index;
+  const index = await (await fetch(`${root}/api/index.json`)).json() as Index;
   const here = join(import.meta.dirname, '..');
   const rows: { score: number; line: string }[] = [];
   let failed = 0;

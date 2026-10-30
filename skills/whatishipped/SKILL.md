@@ -99,7 +99,7 @@ folders could be the brandbook they mean, ask which.
    screens' screenshots; without subagents, draw them one by one with the brief as the checklist. Each area's file
    stem (`area-player`) goes in its platform's `areas.js`.
 7. **Journeys.** Write `<platform>/journeys.js` from the drawn boards: each step names a screen id and one of its
-   states exactly (`curl localhost:4321/api/index` lists them), and the action that leads on. Use the same id for the
+   states exactly (`curl localhost:4321/api/index.json` lists them), and the action that leads on. Use the same id for the
    same journey on every platform.
 8. **Match.** Start the server (`npm start`, in the background) and run `node server/check.ts --compare
    http://localhost:4321 --shot /tmp/match`. It draws each state that has a screenshot (its `app` field) alone at the

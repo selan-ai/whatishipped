@@ -34,7 +34,7 @@ type Board = { Foundations: Foundations; Catalog: Group[]; Screens: Screen[]; Jo
 const w = window as unknown as Board & Record<string, unknown>;
 const path = () => location.pathname.split('/').filter(Boolean).map(decodeURIComponent);
 
-const index: Index = await (await fetch('/api/index')).json();
+const index: Index = await (await fetch('/api/index.json')).json();
 const platform = index.platforms.some((p) => p.id === path()[0]) ? path()[0] : null;
 let m: Model | null = null;
 if (platform) {

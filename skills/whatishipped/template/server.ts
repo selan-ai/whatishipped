@@ -1,7 +1,7 @@
 /*
  * The brandbook's server: `npm start` (node server.ts), then http://localhost:4321. No dependencies.
  *   /                   the brandbook's pages: every path without a file extension gets app/index.html
- *   /api/index          what each platform's board holds, read by server/board.ts
+ *   /api/index.json     what each platform's board holds, read by server/board.ts
  *   /app/*.ts           the brandbook's own code, served as JavaScript (Node strips the types; nothing is built ahead)
  *   /<platform>/*       a platform's board files as they are
  * PORT or the first argument picks another port.
@@ -25,7 +25,7 @@ createServer(async (req, res) => {
   const path = decodeURIComponent(new URL(req.url ?? '/', 'http://brandbook').pathname);
   const headers = { 'cache-control': 'no-store' };
   try {
-    if (path === '/api/index') {
+    if (path === '/api/index.json') {
       res.writeHead(200, { ...headers, 'content-type': types['.json'] }).end(JSON.stringify(await readBrandbook(root)));
       return;
     }

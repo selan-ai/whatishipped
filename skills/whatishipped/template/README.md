@@ -10,10 +10,18 @@ npm start                 # http://localhost:4321; Node 22.18 or later, nothing 
 PORT=8080 npm start       # another port
 ```
 
-To host it, run the same on any machine with Node, or build the image: `docker build -t brandbook . && docker run -p
-8080:8080 brandbook`. The repos are not needed to serve it; links to the code use each platform's `web` address.
-Everything in this folder is served, the screenshots in `<platform>/refs/` and the RECON notes too: keep out what
-should not be public, such as screenshots of a person's own account.
+To host it, run the same on any machine with Node, build the image (`docker build -t brandbook . && docker run -p
+8080:8080 brandbook`), or build static files for any host that serves a folder:
+
+```sh
+npm run build             # dist/; the host answers any address without a file with dist/index.html
+```
+
+On Cloudflare that is a Worker with only assets, `"assets": { "directory": "dist", "not_found_handling":
+"single-page-application" }`, and Cloudflare Access on its hostname to keep it to your team. The repos are not needed
+to serve it; links to the code use each platform's `web` address. Everything in the platform folders is served, the
+screenshots in `<platform>/refs/` and the RECON notes too: keep out what should not be public, such as screenshots of
+a person's own account.
 
 ## Check it
 
@@ -43,7 +51,7 @@ node <this folder>/server/capture.ts --out <this folder>/android/refs --android 
 | `<platform>/RECON.md` | What the code holds: screens, what opens what, journeys, sources, gaps |
 | `<platform>/sources.json`, `assets/` | Source paths found in the repo; fonts and images the drawings use |
 | `app/` | The brandbook in the browser: `shell.ts` routes and draws, `pages/*.ts` one file per kind of page, `frame.js` the phone |
-| `server.ts`, `server/` | The server; `board.ts` reads the platforms into `/api/index`; `check.ts`, `capture.ts`, `png.ts` are tools |
+| `server.ts`, `server/` | The server; `board.ts` reads the platforms into `/api/index.json`; `build.ts` writes the static files; `check.ts`, `capture.ts`, `png.ts` are tools |
 
 ## Extend it
 
