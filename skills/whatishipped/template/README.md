@@ -10,8 +10,9 @@ npm start                 # http://localhost:4321; Node 22.18 or later, nothing 
 PORT=8080 npm start       # another port
 ```
 
-Every image is stored as lossless WebP. Building, checking and capturing need libwebp's `cwebp` and `dwebp`
-(`brew install webp`, `apt install webp`).
+Every image is stored as lossless WebP. Building, capturing, `node server/webp.ts`, and checking with `--compare` or
+`--shot` need libwebp's `cwebp` and `dwebp` (`brew install webp`, `apt install webp`). Checking also needs Google
+Chrome (`CHROME` names another binary).
 
 To host it, run the same on any machine with Node, build the image (`docker build -t brandbook . && docker run -p
 8080:8080 brandbook`), or build static files for any host that serves a folder:

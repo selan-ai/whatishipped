@@ -108,8 +108,9 @@ anything you host.
 
 - Claude Code. A whole app is a big job: the demo took eight agents, drawing in parallel, about an hour.
 - Node 22.18 or later, and Google Chrome for the checks.
-- libwebp's `cwebp` and `dwebp` (`brew install webp`): every screenshot and image is stored as lossless WebP;
-  `node server/webp.ts <in.png>... --out <dir>` converts PNGs you already have, such as a web app's Playwright ones.
+- libwebp's `cwebp` and `dwebp` (`brew install webp`, `apt install webp`): every screenshot and image is stored as
+  lossless WebP; `node server/webp.ts <in.png>... --out <dir>` converts PNGs you already have, such as a web app's
+  Playwright ones.
 - Xcode's simulator or `adb` only to capture native screenshots; a web app uses its own Playwright setup.
 
 No npm packages, anywhere.
@@ -142,6 +143,8 @@ node server/check.ts --all http://localhost:4321        # every page draws witho
 node server/check.ts --compare http://localhost:4321    # every drawing against its screenshot
 node --test tests/*.test.ts                             # the regression tests, from the repository root
 ```
+
+The tests need what the brandbook does: Google Chrome and libwebp's `cwebp` and `dwebp`.
 
 ## License
 
