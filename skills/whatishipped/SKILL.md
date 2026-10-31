@@ -182,8 +182,10 @@ commit (read it with `git show <commit>:<path>`) or to move the whole brandbook 
 - **Use real sizes.** The phone is `Foundations.device`. A component demo that stands on the screen ground uses
   `wide`; a screen scrolled down uses `Frame.phone({ scroll })`.
 - **A web page is drawn with `Frame.web`, in the viewport its screenshot was taken at**, never in a phone frame, with
-  no status bar, clock or home indicator. A full-page screenshot is as tall as the page; the drawing is made that
-  tall. A page that changes at a breakpoint gets a state per viewport, each paired with a screenshot at that viewport.
+  no status bar, clock or home indicator. A full-page screenshot is as tall as the page: the state sets
+  its height, `Frame.web({ body, style: '--phone-h: <screenshot height / density>px' })` (and `--phone-w` for a
+  viewport other than `Foundations.device`), else the drawing is cropped at the device's height. A page that changes
+  at a breakpoint gets a state per viewport, each paired with a screenshot at that viewport.
 - **Draw the orientations the app supports** (native). `Foundations.device` stands in the app's main orientation (the only one
   for a landscape-only app), and every screen's first state, its thumbnail, is drawn that way. A screen whose code lays
   out differently turned gets those states too, through `Frame.phone({ turned: true })`, each paired with a screenshot

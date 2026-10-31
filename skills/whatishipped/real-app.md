@@ -43,8 +43,12 @@ In order:
 Pair by viewport and density: read the viewport (`use.viewport`, `deviceScaleFactor`) from the Playwright config or
 the project the test ran in; the screenshot's width over `deviceScaleFactor` is the viewport in CSS pixels, and
 `Foundations.device` is the main one (`density` the factor, `1` by default). A screenshot at another viewport pairs
-with a state drawn at that viewport; `--compare` warns when the sizes differ. Prefer full-page images
-(`fullPage: true`): the drawing is made as tall as the page, and the match covers all of it. A screenshot of only
+with a state drawn at that viewport; `--compare` warns when the width differs (a different height is
+valid for a full-page image, and does not warn). Prefer full-page images (`fullPage: true`): the state sets its
+height, `Frame.web({ body, style: '--phone-h: 2310px' })` (the screenshot's height over its density), and the match
+covers all of it. Without that override the drawing stands at `Foundations.device.height` and a taller page is
+cropped there; `--compare` sizes the page it draws from the screenshot, but a height the state sets itself wins, so it
+must equal the screenshot's. A screenshot of only
 the viewport pairs with a state that is scrolled to the top.
 
 ## Ask before running anything

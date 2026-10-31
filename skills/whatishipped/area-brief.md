@@ -22,7 +22,8 @@ Read `<OUT>/app/frame.js`, and in `<OUT>/<PLATFORM>/`: `foundations.js`, `tokens
 `components.css`, `areas.js`, and the one or two finished `area-*.js` closest to yours (<CLOSEST AREAS>). Match them.
 How screens use the phone frame here: <FRAME CONVENTIONS FROM RECON, e.g. bars, insets, page helpers>.
 The device is <Foundations.device: NAME, WIDTH × HEIGHT, PORTRAIT OR LANDSCAPE; for web the viewport>; draw every screen that way round. A
-state the app lays out differently turned is `Frame.phone({ turned: true, ... })`, after the screen's states that way round.
+state the app lays out differently turned is `Frame.phone({ turned: true, ... })`, after the screen's states that way round
+(native only: a web page has no orientation and is never turned).
 - Draw each component as a function named after the code's type, with that type's parameters, and add it with
   `Object.assign(window.C, { ... })`.
 - Name CSS classes `c-<name>` after the code's type. A helper class that no type names carries your area's prefix,
@@ -44,7 +45,8 @@ state the app lays out differently turned is `Frame.phone({ turned: true, ... })
   `--home-w`, `--home-h` and `--home-bottom`.
 - **Web platform** (`Foundations.platform: 'web'`): a screen is a route or an overlay it opens; draw it with
   `Frame.web({ body, style })` at the viewport in `Foundations.device` (CSS pixels), with no status bar, home
-  indicator or phone frame. A full-page screenshot is as tall as the page: draw the whole page. A breakpoint
+  indicator or phone frame. A full-page screenshot is as tall as the page: draw the whole page and set the
+  height, `style: '--phone-h: <screenshot height / density>px'`, or it is cropped at the device's height. A breakpoint
   the tests screenshot is a state at that viewport (`style: '--phone-w: <px>'`). Links are `<a>` elements
   whose `opens` entries name the route and the `source` file:line (`how`: `push` for a link or `router.push`,
   `modal` or `sheet` for an overlay). States are the page's loading, empty, error, signed-out and data
@@ -79,7 +81,8 @@ account), draw the scenario's and say so in the note. Pair each screenshot with 
   the repo. `desc` is a few words on what it is. `wide` makes a demo stand on the screen ground at
   phone width; `'bleed'` runs it to the phone's edges.
 - `window.Screens.push({ id, order, feature, name, source, desc, opens, states: [{ name, note, app, render: () =>
-  Frame.phone({ nav, body, tabs, bottom, toast, sheet, over, banner, scroll, style, turned }) }] })`.
+  Frame.phone({ nav, body, tabs, bottom, toast, sheet, over, banner, scroll, style, turned }) }] })`;
+    on web, `render: () => Frame.web({ body, style })`.
   - `app` (on a state): the screenshot of the real app that shows it, or leave it out when none does.
   - `opens`: every way this screen opens another, read from its code:
     `[{ to: '<screen id>', how: 'push'|'sheet'|'modal'|'tab'|'replace'|'deeplink'|'external', from: '<element or state>', source: '<file:line>' }]`.
