@@ -3,7 +3,7 @@
  * A token is { name, css } (a custom property in tokens.css) or { name, value } (a literal the code uses).
  */
 window.Foundations = {
-  platform: 'ios', // or 'android'
+  platform: 'ios', // or 'android', or 'web' (a desktop board: device 1440 × 900, status: 0, clock: '', home: false, density: 1, CSS pixels)
   // The device the app's UI tests run on, in points or dp, as its screenshots show it: the status bar's height (the
   // top safe-area inset; measure it on a screenshot, e.g. 62 on an iPhone 17 Pro), the clock ('9:41', or '09:41'
   // on a 24-hour phone), whether the home indicator shows (home: false when the screenshots have none), and the

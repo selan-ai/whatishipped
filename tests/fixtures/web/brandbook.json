@@ -1,0 +1,6 @@
+{
+  "name": "Web fixture",
+  "sub": "A minimal web board",
+  "platforms": [{ "id": "web", "label": "Web", "repo": null, "web": "https://example.com/repo/blob/abc123/" }],
+  "same": []
+}
