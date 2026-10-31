@@ -211,7 +211,7 @@ function tokenReader(dirs: string[], colours: Map<string, unknown>) {
 }
 
 /* "Features/X.swift:88; Y.kt" → the files it names, found in the repo by their path's tail. */
-const FILE = /([\w@+.\-/]*[\w@+-]+\.(?:swift|kt|kts|java|xml|m|mm|h|ts|tsx|js|dart|xcstrings|strings))(?::(\d+))?/g;
+const FILE = /([\w@+.\-/]*[\w@+-]+\.(?:swift|kt|kts|java|xml|m|mm|h|ts|tsx|js|dart|xcstrings|strings|css|scss|sass|less|html|vue|svelte|astro|mdx))(?::(\d+))?/g;
 function sourceReader(dir: string, repo: string | null) {
   const cacheFile = join(dir, 'sources.json');
   const known: Record<string, string | null> = existsSync(cacheFile) ? JSON.parse(readFileSync(cacheFile, 'utf8')) : {};

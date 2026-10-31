@@ -67,7 +67,7 @@ export function screenPage(m: Model, id: string): Page {
     return `
     <figure class="b-phone${shots.length ? ' b-phone--pair' : ''}" id="state-${i + 1}" style="--shots:${shots.length}">
       <div class="b-phone__frame">${shots.map((r) => app(r.file)).join('')}${phoneAt(() => st.render(), `${s.name} · ${st.name}`, 1)}</div>
-      <figcaption><a class="b-phone__idx" href="#state-${i + 1}">${i + 1}</a><span class="b-phone__name">${esc(st.name)}${shots.length ? ` <span class="b-muted">· the app, then the drawing</span> ${shots.map((r) => matchChip(r.match)).join(' ')}` : ''}</span></figcaption>
+      <figcaption><a class="b-phone__idx" href="#state-${i + 1}">${i + 1}</a><span class="b-phone__name">${esc(st.name)}${shots.length ? ` <span class="b-muted">· the app, then the drawing</span> ${shots.map((r) => matchChip(r.match, m.here.system)).join(' ')}` : ''}</span></figcaption>
     </figure>`;
   }).join('');
   const comps = ix?.components ?? [];

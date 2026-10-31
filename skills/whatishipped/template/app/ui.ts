@@ -5,7 +5,7 @@
 import { slug } from './model.ts';
 import type { Model } from './model.ts';
 import type { How, Source } from './types.ts';
-import { hows, MATCHED, Orientation } from './types.ts';
+import { hows, MATCHED, Orientation, System } from './types.ts';
 
 export const esc = (s: unknown) => String(s ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 const enc = encodeURIComponent;
@@ -31,7 +31,7 @@ export const url = {
 };
 
 /* How much of a state matches the app's screenshot (check.ts --compare), as a chip. */
-export const matchChip = (score: number | null) => (score === null ? '' : `<span class="b-match b-match--${score >= MATCHED ? 'good' : score >= MATCHED - 10 ? 'fair' : 'poor'}" title="Share of the screen below the status bar that matches the app's screenshot">${score}% match</span>`);
+export const matchChip = (score: number | null, system: System) => (score === null ? '' : `<span class="b-match b-match--${score >= MATCHED ? 'good' : score >= MATCHED - 10 ? 'fair' : 'poor'}" title="${system === System.web ? 'Share of the page' : 'Share of the screen below the status bar'} that matches the app's screenshot">${score}% match</span>`);
 export const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 export const how = (h: How) => `<span class="b-how b-how--${hows.parse(h, 'push')}">${esc(h)}</span>`;
 export const screenLink = (m: Model, id: string) => {

@@ -54,7 +54,7 @@ export function overviewPage(m: Model): Page {
   const mean = measured.length ? Math.round(measured.reduce((n, x) => n + (x.r.match as number), 0) / measured.length) : 0;
   const against = `<h2 class="b-h2">Against the app</h2>
     <p class="b-lede">${shot.length ? `${shot.length} of ${plural(m.here.screens.length, 'screen', 'screens')} with screenshots${measured.length ? ` · ${mean}% on average` : ''}` : 'No screenshot of the app'}</p>
-    ${measured.length ? `<h3 class="b-h3">${measured.length > 8 ? `The 8 that match least, of ${measured.length}` : 'Each, the least matching first'}</h3><ul class="b-rows">${measured.slice(0, 8).map(({ s, r }) => `<li>${matchChip(r.match)} <a href="${url.state(p, s.id, s.states.indexOf(r.state as string))}">${esc(s.name)} · ${esc(r.state)}</a></li>`).join('')}</ul>` : ''}`;
+    ${measured.length ? `<h3 class="b-h3">${measured.length > 8 ? `The 8 that match least, of ${measured.length}` : 'Each, the least matching first'}</h3><ul class="b-rows">${measured.slice(0, 8).map(({ s, r }) => `<li>${matchChip(r.match, m.here.system)} <a href="${url.state(p, s.id, s.states.indexOf(r.state as string))}">${esc(s.name)} · ${esc(r.state)}</a></li>`).join('')}</ul>` : ''}`;
   return {
     title: F.app.name, kicker: `${F.device.name}, ${F.device.width} × ${F.device.height}`, crumbs: [], actions: '',
     body: `<div class="b-stats b-stats--big">${tiles}</div>

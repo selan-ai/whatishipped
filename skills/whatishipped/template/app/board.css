@@ -167,6 +167,8 @@ a.b-chip:hover { border-color: var(--b-accent); color: var(--b-text); }
 .b-match--fair { background: rgba(255, 179, 64, 0.14); color: #ffc874; }
 .b-match--poor { background: rgba(255, 92, 92, 0.14); color: #ff9a9a; }
 .b-shot { display: block; flex-shrink: 0; width: var(--phone-w); height: var(--phone-h); object-fit: cover; border-radius: 48px; box-shadow: 0 0 0 10px #050608, 0 0 0 11px #2b2f38, 0 30px 60px rgba(0, 0, 0, 0.5); }
+/* A web page is shown as it is: no rounded phone bezel around its screenshot. */
+[data-system="web"] .b-shot { height: auto; object-fit: contain; border-radius: 0; box-shadow: 0 0 0 1px #2b2f38; }
 .b-phone:has(.phone--turned) .b-shot { width: var(--phone-h); height: var(--phone-w); }
 .b-phone figcaption { display: grid; grid-template-columns: auto 1fr; gap: 1px 9px; margin-top: 16px; padding: 0 4px; }
 .b-phone figcaption > * { min-width: 0; overflow-wrap: anywhere; }

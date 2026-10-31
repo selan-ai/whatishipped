@@ -20,7 +20,7 @@ import { navigationPage } from './pages/navigation.ts';
 import type { Page } from './pages/page.ts';
 import { featurePage, screenPage, screensPage } from './pages/screens.ts';
 import { search } from './search.ts';
-import { closed, Ground, grounds } from './types.ts';
+import { closed, Ground, grounds, System } from './types.ts';
 import type { Foundations, Group, Index, Journey, Screen } from './types.ts';
 import { esc, hydrate, resetLazy, url } from './ui.ts';
 
@@ -42,6 +42,8 @@ if (platform) {
   m = model(index, platform, w);
   const root = document.documentElement;
   root.dataset.platform = m.F.platform;
+  /* ios, android or web: the board's CSS drops the phone's bezel for a web page. */
+  root.dataset.system = m.here.system;
   /* Which way the device stands: the board's CSS lays thumbnails, cards and pairs out by it. */
   root.dataset.orientation = m.orientation;
   root.style.setProperty('--phone-w', `${m.F.device.width}px`);
@@ -150,7 +152,7 @@ function top() {
     <a class="b-brand" href="/"><span class="b-brand__name">${esc(index.name)}</span><span class="b-brand__tag">Brandbook</span></a>
     <nav class="b-platforms">${index.platforms.map((x) => `<a class="${x.id === platform ? 'on' : ''}" href="${switchTo(x.id)}">${esc(x.label)}<span>${x.screens.length}</span></a>`).join('')}</nav>
     <button class="b-searchbtn" type="button">Search screens, states, components, colours<kbd>⌘K</kbd></button>
-    ${m ? `<div class="b-seg b-zoom" title="Phone size">${zooms.map((z) => `<button type="button" data-zoom="${z}" class="${z === zoom ? 'on' : ''}">${Math.round(z * 100)}%</button>`).join('')}</div>` : ''}
+    ${m ? `<div class="b-seg b-zoom" title="${m.here.system === System.web ? 'Page size' : 'Phone size'}">${zooms.map((z) => `<button type="button" data-zoom="${z}" class="${z === zoom ? 'on' : ''}">${Math.round(z * 100)}%</button>`).join('')}</div>` : ''}
   </header>`;
 }
 
