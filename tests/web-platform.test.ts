@@ -63,3 +63,8 @@ test('a web board is indexed as the web system at its viewport', async () => {
   assert.equal(web.screens[0].id, 'home');
   assert.equal(web.components[0].name, 'Button');
 });
+
+test('Frame.web draws an absent body as nothing, not as "undefined"', () => {
+  const html = frame('web').web({ body: undefined as unknown as string });
+  assert.ok(!html.includes('undefined'));
+});

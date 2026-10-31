@@ -39,7 +39,13 @@ node <this folder>/server/capture.ts --out <this folder>/android/refs --android 
 
 A web board (`Foundations.platform: 'web'`) is drawn with `Frame.web` at the browser's viewport in CSS pixels
 (1440 × 900 for the desktop starter), against full-page Playwright screenshots; there is no phone frame.
-New screenshots are stored as WebP, and an earlier PNG still works. In the skill's repository, the regression
+New screenshots are stored as WebP, and an earlier PNG still works. Convert PNGs (Playwright's, or ones you add) with:
+
+```sh
+node server/webp.ts <in.png>... --out <platform>/refs
+```
+
+It keeps each file's name, creates the folder, and reports any file it cannot convert (a side over WebP's 16383 px limit is refused). In the skill's repository, the regression
 tests run with `node --test tests/*.test.ts`.
 
 ## What is where
@@ -57,7 +63,7 @@ tests run with `node --test tests/*.test.ts`.
 | `<platform>/RECON.md` | What the code holds: screens, what opens what, journeys, sources, gaps |
 | `<platform>/sources.json`, `assets/` | Source paths found in the repo; fonts and images the drawings use |
 | `app/` | The brandbook in the browser: `shell.ts` routes and draws, `pages/*.ts` one file per kind of page, `frame.js` the phone |
-| `server.ts`, `server/` | The server; `board.ts` reads the platforms into `/api/index.json`; `build.ts` writes the static files; `check.ts`, `capture.ts`, `png.ts`, `image.ts`, `webp.ts` are tools |
+| `server.ts`, `server/` | The server; `board.ts` reads the platforms into `/api/index.json`; `build.ts` writes the static files; `check.ts`, `capture.ts`, `png.ts`, `image.ts`, `webp.ts` (also the PNG-to-WebP command) are tools |
 
 ## Extend it
 

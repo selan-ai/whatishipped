@@ -108,7 +108,7 @@ anything you host.
 - Claude Code. A whole app is a big job: the demo took eight agents, drawing in parallel, about an hour.
 - Node 22.18 or later, and Google Chrome for the checks.
 - Xcode's simulator or `adb` only to capture native screenshots; a web app uses its own Playwright setup.
-- Screenshots are stored as WebP (earlier PNG references still work); Chrome encodes them.
+- Screenshots are stored as WebP (earlier PNG references still work); Chrome encodes them, and `node server/webp.ts <in.png>... --out <dir>` converts PNGs you already have.
 
 No npm packages, anywhere.
 

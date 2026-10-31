@@ -47,7 +47,7 @@ window.Frame = (() => {
     return `<div class="phone phone--${p}${turn}" style="${style ?? ''}"><div class="phone__top${top}">${status()}${nav ?? ''}</div><div class="phone__body"><div class="phone__page" style="margin-top:${-(scroll ?? 0)}px">${body ?? ''}</div></div>${tabs ? `<div class="phone__tabs">${tabs}</div>` : ''}${bottom ? `<div class="phone__bottom">${bottom}</div>` : ''}${toast ? `<div class="phone__toast">${toast}</div>` : ''}${dim}${sheet ? `<div class="phone__sheet">${sheet}</div>` : ''}${overDim}${over ? `<div class="phone__over">${over}</div>` : ''}${banner ? `<div class="phone__banner">${banner}</div>` : ''}${window.Foundations.device.home === false ? '' : '<div class="phone__home"></div>'}</div>`;
   }
 
-  const web = ({ body, style }) => `<div class="phone phone--web" style="${style ?? ''}"><div class="phone__body"><div class="phone__page">${body}</div></div></div>`;
+  const web = ({ body, style }) => `<div class="phone phone--web" style="${style ?? ''}"><div class="phone__body"><div class="phone__page">${body ?? ''}</div></div></div>`;
 
   /*
    * A demo's states: d('label', () => html); d('label', () => html, 'wide') for one that stands on the screen ground at

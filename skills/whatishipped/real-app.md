@@ -34,10 +34,11 @@ from the brandbook: ask before keeping such screenshots in it.
 A web front end has no simulator, and `capture.ts` (which watches an iOS simulator or Android emulator) is not used.
 In order:
 1. Playwright artefacts already checked in: `*-snapshots/` beside the specs, `e2e/` or `tests/` screenshots,
-   `docs/` images. Copy them into `refs/`.
+   `docs/` images. Convert the PNGs into `refs/` (`node <OUT>/server/webp.ts <in.png>... --out <OUT>/<platform>/refs`);
+   it keeps each name and refuses a side over 16383 px, which WebP cannot hold.
 2. The repository's approved E2E/UX suite, run as its README or CI config says (`npx playwright test`, or its own
-   script), after asking as below. Take the screenshots it writes; if the suite takes none, ask before adding
-   `page.screenshot` calls outside the repo's tracked files (an ignored config or a copy of the spec).
+   script), after asking as below. Take the screenshots it writes and convert them the same way; if the suite takes none,
+   ask before adding `page.screenshot` calls outside the repo's tracked files (an ignored config or a copy of the spec).
 3. The person's screenshots.
 
 Pair by viewport and density: read the viewport (`use.viewport`, `deviceScaleFactor`) from the Playwright config or
@@ -109,8 +110,9 @@ and the time.
    ```sh
    sips -m "/System/Library/ColorSync/Profiles/sRGB Profile.icc" <in.png> --out <out.png>
    ```
-3. Copy the ones that show the app into `<platform>/refs/` under their own names, and map them in refs.json with a
-   note naming the phone and the account. New references are WebP (captured frames already are); a PNG still works.
+3. Put the ones that show the app into `<platform>/refs/` under their own names, and map them in refs.json with a
+   note naming the phone and the account. New references are WebP: convert a PNG with
+   `node <OUT>/server/webp.ts <in.png>... --out <OUT>/<platform>/refs` (captured frames already are); a PNG still works.
    A screenshot of a screen not drawn yet goes on RECON's list for the next
    batch; one of a state the board lacks becomes a new state.
 4. Pair each with its state (`app`) in the area file that draws it, and match (SKILL.md, step 8).

@@ -212,7 +212,7 @@ function tokenReader(dirs: string[], colours: Map<string, unknown>) {
 
 /* "Features/X.swift:88; Y.kt" → the files it names, found in the repo by their path's tail. Nothing after the extension
    forces backtracking, so a longer extension must come before the one it starts with (tsx before ts, html before h). */
-const FILE = /([\w@+.\-/]*[\w@+-]+\.(?:swift|kt|kts|java|xml|mdx|m|mm|html|h|tsx|ts|js|dart|xcstrings|strings|css|scss|sass|less|vue|svelte|astro))(?::(\d+))?/g;
+const FILE = /([\w@+.\-/]*[\w@+-]+\.(?:swift|kt|kts|java|xml|mdx|mjs|mts|m|mm|html|h|tsx|ts|jsx|js|cjs|cts|dart|xcstrings|strings|css|scss|sass|less|vue|svelte|astro))(?::(\d+))?/g;
 /* The files a source text names, with the line when it gives one. */
 export const sourceMentions = (text: string) => [...text.matchAll(FILE)].map((m) => ({ text: m[0], file: m[1], line: m[2] ? Number(m[2]) : null }));
 function sourceReader(dir: string, repo: string | null) {

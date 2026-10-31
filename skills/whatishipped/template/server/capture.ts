@@ -159,10 +159,11 @@ async function poll(d: Device) {
     ? !s.kept.some((k) => change(sig, k) < ALIKE)
     : s.moving !== null && Date.now() - s.moving > MOVING && !s.kept.some((k) => mean(sig, k) < APART);
   if (!keep) return;
-  if (!settled) s.moving = null;
-  s.kept = [...s.kept.slice(-(RECENT - 1)), sig];
   const webp = await encodeWebp(png, chrome.evaluate);
   if (!webp) { console.error('[capture] Chrome could not convert a frame to WebP; it was not kept'); return; }
+  /* Only a frame that was written counts as kept, so a failed conversion does not hide the next look at the same screen. */
+  if (!settled) s.moving = null;
+  s.kept = [...s.kept.slice(-(RECENT - 1)), sig];
   const file = frameFile(frames.length);
   writeFileSync(join(out as string, file), webp);
   const named = tests.get(key) ?? test;
