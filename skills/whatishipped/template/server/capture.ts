@@ -23,7 +23,7 @@ import { promisify } from 'node:util';
 import { System } from '../app/types.ts';
 import { frameFile } from './image.ts';
 import { decode, grid } from './png.ts';
-import { encodeWebp, startChrome } from './webp.ts';
+import { CHROME, encodeWebp, startChrome } from './webp.ts';
 
 type Device = { kind: System; id: string; set: string | null };
 type Frame = { file: string; device: string; at: string; test: string | null; line: string };
@@ -109,7 +109,7 @@ const RECENT = 12;
 
 mkdirSync(out, { recursive: true });
 /* One Chrome converts every kept frame; it is started before anything is watched and ended with the run. */
-const chrome = await startChrome().catch((e: Error) => { console.error(`[capture] ${e.message}`); return process.exit(2); });
+const chrome = await startChrome(CHROME).catch((e: Error) => { console.error(`[capture] ${e.message}`); return process.exit(2); });
 const index = join(out, 'frames.json');
 const frames: Frame[] = existsSync(index) ? JSON.parse(readFileSync(index, 'utf8')) : [];
 const before = frames.length;
