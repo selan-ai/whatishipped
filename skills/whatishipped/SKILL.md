@@ -63,8 +63,13 @@ folders could be the brandbook they mean, ask which.
    - **journeys:** the paths a person takes (onboarding, the core loop, search, buying, settings), each as the
      screens it passes through, read from what opens what and the entry points (tabs, deep links, notifications);
    - where states, sample words (fixtures, mocks, previews), fonts and images come from;
+   - **the orientations** the app supports, from its code: iOS `UISupportedInterfaceOrientations` in Info.plist (and
+     its `~ipad` key), Android `android:screenOrientation` on each activity in AndroidManifest.xml or
+     `requestedOrientation` in code, a web manifest's `orientation`; and the screens that lay out differently in each;
    - **the device** the UI tests run on, else the simulator or emulator the build scripts pick, as its screenshots
-     show it: size, density (pixels per point), status bar height, clock, home indicator (`Foundations.device`);
+     show it: size, density (pixels per point), status bar height, clock, home indicator (`Foundations.device`). It
+     stands the way the app does: an app that runs only in landscape (an iPad game, a tablet app) gets a device wider
+     than tall, `{ width: 1180, height: 820 }` for an iPad (A16) on its side, and the board lays out by that;
    - **each design system** the app ships, and how much the app uses it by counting references (`Foundations.systems`);
    - **the real app:** screenshots already in the repo (snapshot or UI test references, store screenshots under
      `fastlane/`), and the E2E or UI tests: framework, the command (CI config holds the whole sequence), the
@@ -164,6 +169,10 @@ commit (read it with `git show <commit>:<path>`) or to move the whole brandbook 
 - **Take words from the repo's fixtures, mocks and previews**, or from the screenshots. Invent them only where none exist.
 - **Use real sizes.** The phone is `Foundations.device`. A component demo that stands on the screen ground uses
   `wide`; a screen scrolled down uses `Frame.phone({ scroll })`.
+- **Draw the orientations the app supports.** `Foundations.device` stands in the app's main orientation (the only one
+  for a landscape-only app), and every screen's first state, its thumbnail, is drawn that way. A screen whose code lays
+  out differently turned gets those states too, through `Frame.phone({ turned: true })`, each paired with a screenshot
+  taken that way round.
 - **Use one clock.** The status bar says the device's 9:41 (`Foundations.device.clock`, 09:41 on a 24-hour phone);
   write every time relative to it.
 - **Say what you approximate** (SF Symbols, system sheets, the keyboard, animation), in RECON. Never drop anything
@@ -189,6 +198,7 @@ commit (read it with `git show <commit>:<path>`) or to move the whole brandbook 
 | Redrawing a brandbook to add one screen | Add an area; see Extending |
 | Every screen on one long page | The shell pages by feature, screen, group and component; keep data in the platform files |
 | Fonts and images read from the app repo by `../../` | Copy them into `<platform>/assets/` |
+| Drew a landscape app in portrait: an iPad game in a phone-shaped frame, its layout squeezed | RECON reads the supported orientations; a landscape-only app's `Foundations.device` is wider than tall |
 | The screen's gradient squeezed into a short component demo | `wide`, which slices the ground at phone size |
 | "Opened it" with no `open` run | Start the server, then `open` the URL |
 | Copying a hand-drawn board in the repo | Use it only to compare, after drawing from code |

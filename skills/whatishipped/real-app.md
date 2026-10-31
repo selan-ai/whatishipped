@@ -20,7 +20,9 @@ and say in the note which commit the screenshot predates.
 **Read the device off the screenshots.** The density is pixels per point: an iPhone's 2 or 3, an Android device's
 dpi / 160 (`adb shell wm density`, or the AVD's `hw.lcd.density`: 420 is 2.625). The screenshot's width over the
 density is the device's width in points (1080 / 2.625 = 411.43); the status bar's height is the top inset, measured
-on a screenshot. These go in `Foundations.device`, and `--compare` sizes each drawing from them.
+on a screenshot. These go in `Foundations.device`, and `--compare` sizes each drawing from them. A landscape-only
+app's screenshots are wider than tall, and so is its device (2360 × 1640 at 2 is an iPad (A16) at 1180 × 820). A
+screenshot turned from the device shows a turned state: `--compare` measures it turned, and says when the drawing is not.
 
 Screenshots show the account they were taken with. A person's own account goes into `refs/` and into anything hosted
 from the brandbook: ask before keeping such screenshots in it.

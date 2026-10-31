@@ -21,6 +21,8 @@ Take sample words from <FIXTURES / MOCKS / PREVIEWS>, the app's own test data.
 Read `<OUT>/app/frame.js`, and in `<OUT>/<PLATFORM>/`: `foundations.js`, `tokens.css`, `components.js`,
 `components.css`, `areas.js`, and the one or two finished `area-*.js` closest to yours (<CLOSEST AREAS>). Match them.
 How screens use the phone frame here: <FRAME CONVENTIONS FROM RECON, e.g. bars, insets, page helpers>.
+The device is <Foundations.device: NAME, WIDTH × HEIGHT, PORTRAIT OR LANDSCAPE>; draw every screen that way round. A
+state the app lays out differently turned is `Frame.phone({ turned: true, ... })`, after the screen's states that way round.
 - Draw each component as a function named after the code's type, with that type's parameters, and add it with
   `Object.assign(window.C, { ... })`.
 - Name CSS classes `c-<name>` after the code's type. A helper class that no type names carries your area's prefix,
@@ -70,7 +72,7 @@ account), draw the scenario's and say so in the note. Pair each screenshot with 
   the repo. `desc` is a few words on what it is. `wide` makes a demo stand on the screen ground at
   phone width; `'bleed'` runs it to the phone's edges.
 - `window.Screens.push({ id, order, feature, name, source, desc, opens, states: [{ name, note, app, render: () =>
-  Frame.phone({ nav, body, tabs, bottom, toast, sheet, over, banner, scroll, style, landscape }) }] })`.
+  Frame.phone({ nav, body, tabs, bottom, toast, sheet, over, banner, scroll, style, turned }) }] })`.
   - `app` (on a state): the screenshot of the real app that shows it, or leave it out when none does.
   - `opens`: every way this screen opens another, read from its code:
     `[{ to: '<screen id>', how: 'push'|'sheet'|'modal'|'tab'|'replace'|'deeplink'|'external', from: '<element or state>', source: '<file:line>' }]`.
