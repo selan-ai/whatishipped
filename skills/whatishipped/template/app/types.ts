@@ -34,7 +34,7 @@ export type Ground = (typeof grounds.values)[number];
 export const Ground = grounds.names;
 
 export type Open = { to: string; how: How; from: string; source: string };
-/* app: a screenshot of the real app showing this state ("refs/0012.png"), or null. */
+/* app: a screenshot of the real app showing this state ("refs/0012.webp"), or null. */
 export type State = { name: string; note: string; app: string | null; render: () => string };
 export type Screen = { id: string; order: number; feature: string; name: string; source: string; desc: string; opens: Open[]; states: State[] };
 export type Demo = { label: string; render: () => string; wide: boolean; bleed: boolean };

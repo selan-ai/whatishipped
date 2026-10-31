@@ -11,7 +11,7 @@
  * --ios takes a simulator's UDID, or booted: every booted one, the runner's parallel clones too, looked up again as the
  * run boots more. --android takes an adb serial, or all. Name the device when other simulators, emulators or phones
  * are up, or their screens are captured too. --every sets the poll in ms (700).
- * Writes <out>/NNNN.png and <out>/frames.json, [{ file, device, at, test, line }], adding to an earlier run's.
+ * Writes <out>/NNNN.webp (the device's PNG, converted by one Chrome kept up for the run) and <out>/frames.json, [{ file, device, at, test, line }], adding to an earlier run's.
  * The command runs unchanged, from the current folder; its exit code is this one's, or 1 when no frame was kept.
  */
 import { execFile, execFileSync, spawn } from 'node:child_process';
@@ -21,7 +21,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 import { System } from '../app/types.ts';
+import { frameFile } from './image.ts';
 import { decode, grid } from './png.ts';
+import { encodeWebp, startChrome } from './webp.ts';
 
 type Device = { kind: System; id: string; set: string | null };
 type Frame = { file: string; device: string; at: string; test: string | null; line: string };
@@ -106,6 +108,8 @@ const APART = 6;
 const RECENT = 12;
 
 mkdirSync(out, { recursive: true });
+/* One Chrome converts every kept frame; it is started before anything is watched and ended with the run. */
+const chrome = await startChrome().catch((e: Error) => { console.error(`[capture] ${e.message}`); return process.exit(2); });
 const index = join(out, 'frames.json');
 const frames: Frame[] = existsSync(index) ? JSON.parse(readFileSync(index, 'utf8')) : [];
 const before = frames.length;
@@ -157,8 +161,10 @@ async function poll(d: Device) {
   if (!keep) return;
   if (!settled) s.moving = null;
   s.kept = [...s.kept.slice(-(RECENT - 1)), sig];
-  const file = `${String(frames.length + 1).padStart(4, '0')}.png`;
-  writeFileSync(join(out as string, file), png);
+  const webp = await encodeWebp(png, chrome.evaluate);
+  if (!webp) { console.error('[capture] Chrome could not convert a frame to WebP; it was not kept'); return; }
+  const file = frameFile(frames.length);
+  writeFileSync(join(out as string, file), webp);
   const named = tests.get(key) ?? test;
   frames.push({ file, device: key, at: new Date().toISOString(), test: named, line });
   writeFileSync(index, `${JSON.stringify(frames, null, 1)}\n`);
@@ -195,6 +201,7 @@ while (running) {
   await new Promise((r) => setTimeout(r, Math.max(0, every - (Date.now() - tick))));
 }
 for (const tail of tails.values()) tail.kill();
+await chrome.close();
 const added = frames.length - before;
 if (added) console.log(`[capture] ${added} new frames, ${frames.length} in ${index}`);
 else console.error('[capture] no frames: no device was up, or --ios/--android named another one');

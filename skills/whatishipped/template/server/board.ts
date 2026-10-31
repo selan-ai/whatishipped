@@ -139,8 +139,8 @@ function readPlatform(root: string, p: Config['platforms'][number]): IndexPlatfo
 }
 
 /*
- * Screenshots of the real app per screen, from refs.json ({ "<screen id>": [{ "file": "refs/0012.png", "state": "<state
- * name>" | null, "note": "…" }] }) and from the states themselves ({ name, app: "refs/0012.png", render }), which pair
+ * Screenshots of the real app per screen, from refs.json ({ "<screen id>": [{ "file": "refs/0012.webp", "state": "<state
+ * name>" | null, "note": "…" }] }) and from the states themselves ({ name, app: "refs/0012.webp", render }), which pair
  * a screenshot with the state it shows. match.json, which check.ts --compare writes: { "<screen id>": { "<file>": the
  * percent of the screen that matches } }.
  */

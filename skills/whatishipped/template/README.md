@@ -51,13 +51,13 @@ node <this folder>/server/capture.ts --out <this folder>/android/refs --android 
 | `<platform>/RECON.md` | What the code holds: screens, what opens what, journeys, sources, gaps |
 | `<platform>/sources.json`, `assets/` | Source paths found in the repo; fonts and images the drawings use |
 | `app/` | The brandbook in the browser: `shell.ts` routes and draws, `pages/*.ts` one file per kind of page, `frame.js` the phone |
-| `server.ts`, `server/` | The server; `board.ts` reads the platforms into `/api/index.json`; `build.ts` writes the static files; `check.ts`, `capture.ts`, `png.ts` are tools |
+| `server.ts`, `server/` | The server; `board.ts` reads the platforms into `/api/index.json`; `build.ts` writes the static files; `check.ts`, `capture.ts`, `png.ts`, `image.ts`, `webp.ts` are tools |
 
 ## Extend it
 
 - **Screens, a flow, a feature:** a new `area-<name>.js` (and `.css`), its stem added to `<platform>/areas.js`.
 - **Screenshots:** files in `<platform>/refs/`, each mapped to its screen in `refs.json`; the state a screenshot shows
-  names it (`{ name, app: 'refs/0012.png', render }`).
+  names it (`{ name, app: 'refs/0012.webp', render }`).
 - **A platform:** a copy of the skill's `template/platform` starter, and an entry in `brandbook.json`.
 - **A kind of page:** a function returning a `Page` in `app/pages/`, a section in `shell.ts` (`sections`, `page()`
   and `tree()`), and its addresses in `ui.ts` (`url`). The data it needs comes from the platform files through

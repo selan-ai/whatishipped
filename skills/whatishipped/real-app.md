@@ -64,12 +64,12 @@ and the time.
 ## Sort and pair
 
 - **Sort** (with subagents when there are hundreds of frames): write `refs.json`, mapping each screen being drawn to
-  its frames, `{ "home-feed": [{ "file": "refs/0012.png", "state": null, "note": "HomeTests.testOpens; the free QA
+  its frames, `{ "home-feed": [{ "file": "refs/0012.webp", "state": null, "note": "HomeTests.testOpens; the free QA
   account" }] }`. Delete frames that show no screen of the app (launcher, launch, system sheets). List in RECON, for
   the next batch, the frames of screens not drawn yet, and the screens no frame reaches.
 - **Pair:** whoever draws a state names the screenshot that shows it, in the state itself: `{ name, note, app:
-  'refs/0012.png', render }`. Pick the frame closest to the scenario (its account, loaded). A screenshot named after
-  its state (`accounts-several.png`) pairs at once. The state's `app` is the pairing; refs.json's `state` does the
+  'refs/0012.webp', render }`. Pick the frame closest to the scenario (its account, loaded). A screenshot named after
+  its state (`accounts-several.webp`) pairs at once. The state's `app` is the pairing; refs.json's `state` does the
   same for a state you are not editing, and `app` wins where both say.
 - **A screenshot of a screen outside the request** that a requested flow passes through (sign-in lands on the home
   screen): draw that screen in the state the screenshot shows, so the journey reads through, and say in its desc
@@ -86,6 +86,7 @@ and the time.
    sips -m "/System/Library/ColorSync/Profiles/sRGB Profile.icc" <in.png> --out <out.png>
    ```
 3. Copy the ones that show the app into `<platform>/refs/` under their own names, and map them in refs.json with a
-   note naming the phone and the account. A screenshot of a screen not drawn yet goes on RECON's list for the next
+   note naming the phone and the account. New references are WebP (captured frames already are); a PNG still works.
+   A screenshot of a screen not drawn yet goes on RECON's list for the next
    batch; one of a state the board lacks becomes a new state.
 4. Pair each with its state (`app`) in the area file that draws it, and match (SKILL.md, step 8).

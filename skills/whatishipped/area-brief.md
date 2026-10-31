@@ -49,7 +49,7 @@ Screenshots of the real app, in <OUT>/<PLATFORM>/refs/, for your screens: <SCREE
 Open each before drawing its screen and match it: layout, sizes, spacing, type, colours, icons, what is on the screen
 and in what order. Titles and covers may be the test account's; where one shows another variant (a flag, an
 account), draw the scenario's and say so in the note. Pair each screenshot with the state it shows, in the state:
-`{ name, note, app: 'refs/0012.png', render }`, the frame closest to the scenario where several show one state.
+`{ name, note, app: 'refs/0012.webp', render }`, the frame closest to the scenario where several show one state.
 
 ## Shared pieces and the scenario
 - Draw every screen in `Foundations.scenario`: the same account, flags and tabs as every other area.

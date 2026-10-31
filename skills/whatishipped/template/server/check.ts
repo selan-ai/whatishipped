@@ -20,6 +20,7 @@
  * it warns when the drawing is not (Frame.phone's turned).
  * A web board's screenshot is a viewport (Foundations.device is its width in CSS pixels): its own height is free, and it
  * warns only when the width is another viewport's. See viewport.ts.
+ * References are WebP (PNGs from before still read); Chrome, through this session, decodes them.
  * CHROME names another Chrome binary.
  */
 import { spawn } from 'node:child_process';
@@ -29,6 +30,7 @@ import { slug } from '../app/model.ts';
 import { MATCHED } from '../app/types.ts';
 import type { Index } from '../app/types.ts';
 import { match, picture, zoom } from './match.ts';
+import { decodeImage, isWebp } from './image.ts';
 import { crop, decode, encode, profile } from './png.ts';
 import { screenshotGeometry } from './viewport.ts';
 
@@ -88,7 +90,7 @@ socket.addEventListener('message', (e) => {
   if (msg.method === 'Network.responseReceived' && msg.params.response.status >= 400) problems.push(`${msg.params.response.status}: ${msg.params.response.url}`);
 });
 const send = (method: string, params: object) => new Promise<any>((ok) => { id += 1; waiting.set(id, ok); socket.send(JSON.stringify({ id, method, params })); });
-const value = async (expression: string) => (await send('Runtime.evaluate', { expression, returnByValue: true })).result.value;
+const value = async (expression: string) => (await send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true })).result.value;
 await send('Runtime.enable', {});
 await send('Network.enable', {});
 await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false });
@@ -142,8 +144,8 @@ async function measure(root: string) {
       if (at < 0) continue;
       const what = `${p.id}  ${s.name} · ${r.state}  ${r.file}`;
       const png = Buffer.from(await (await fetch(`${root}/${p.id}/${r.file}`)).arrayBuffer());
-      const app = decode(png);
-      if (!app) { console.log(`✗ ${what}: not an 8-bit PNG`); failed += 1; continue; }
+      const app = await decodeImage(png, value);
+      if (!app) { console.log(`✗ ${what}: not an 8-bit PNG or a WebP Chrome can read`); failed += 1; continue; }
       problems.length = 0;
       /* The phone at the screenshot's exact size in points (411.43 dp at 2.625), the page a whole number of points around
          it, and the shot cropped to the screenshot: nothing is resampled. */
@@ -168,12 +170,12 @@ async function measure(root: string) {
         turned && !drewTurned ? 'the screenshot is turned from Foundations.device and the drawing is not: draw the state with Frame.phone({ turned: true })' : '',
         drewTurned && !turned ? 'the drawing is turned and the screenshot is not: draw the state unturned' : '',
         ...geometry,
-        profile(png) ? `colour profile ${profile(png)}: convert it to sRGB` : '',
+        !isWebp(png) && profile(png) ? `colour profile ${profile(png)}: convert it to sRGB` : '',
       ].filter(Boolean);
       if (rowsOff) notes.unshift(`differs most at y ${rowsOff}`);
       rows.push({ score: result.score, line: `${String(result.score).padStart(4)}%  ${what}${notes.length ? `  (${notes.join('; ')})` : ''}` });
       if (shots) {
-        const name = join(shots, `${p.id}-${slug(s.id)}-${at + 1}-${slug(r.file.replace(/^.*\//, '').replace(/\.png$/i, ''))}`);
+        const name = join(shots, `${p.id}-${slug(s.id)}-${at + 1}-${slug(r.file.replace(/^.*\//, '').replace(/\.(png|webp)$/i, ''))}`);
         writeFileSync(`${name}.png`, encode(picture(app, drawn, result, Math.round(w), Math.round(h))));
         writeFileSync(`${name}-drawing.png`, encode(drawn));
         const close = zoom(app, drawn, result);
