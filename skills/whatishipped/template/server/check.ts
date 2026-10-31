@@ -22,6 +22,8 @@
  * of the board's width, or of another height) or names a colour profile other than sRGB. A screenshot the other way
  * round from Foundations.device (landscape on a portrait phone) is a turned state: the device is measured turned, and
  * it warns when the drawing is not (Frame.phone's turned).
+ * A web board's screenshot is a viewport (Foundations.device is its width in CSS pixels): its own height is free, and it
+ * warns only when the width is another viewport's. See viewport.ts.
  * Screenshots are read as WebP (server/webp.ts; a PNG is read too, and named so it gets converted).
  * CHROME names another Chrome binary.
  */
@@ -29,11 +31,12 @@ import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { slug } from '../app/model.ts';
-import { MATCHED, System } from '../app/types.ts';
+import { MATCHED } from '../app/types.ts';
 import type { Index } from '../app/types.ts';
 import { diffOf } from './board.ts';
 import { mask, match, picture, zoom } from './match.ts';
 import { crop, decode, profile } from './png.ts';
+import { screenshotGeometry } from './viewport.ts';
 import { encode, isWebp, needWebp, read, toWebp, webpProfile } from './webp.ts';
 
 const args = process.argv.slice(2);
@@ -252,16 +255,10 @@ async function measure(root: string) {
       problems.length = 0;
       /* The phone at the screenshot's exact size in points (411.43 dp at 2.625), the page a whole number of points around
          it, and the shot cropped to the screenshot: nothing is resampled. */
-      const density = Number(p.size.density) || 0;
-      /* A screenshot the other way round from the device shows it turned. */
-      const turned = (app.width > app.height) !== (p.size.width > p.size.height);
-      const device = turned ? { width: p.size.height, height: p.size.width } : { width: p.size.width, height: p.size.height };
-      const scale = density > 0 ? density : app.width / device.width;
-      const w = app.width / scale;
-      const h = app.height / scale;
+      const { width: w, height: h, scale, turned, bare, status, notes: geometry } = screenshotGeometry({ system: p.system, size: p.size }, app);
       await send('Emulation.setDeviceMetricsOverride', { width: Math.ceil(w), height: Math.ceil(h), deviceScaleFactor: scale, mobile: false });
       /* A turned phone stands as --phone-h × --phone-w, so a turned screenshot's sides go in the other way round. */
-      await send('Page.navigate', { url: `${root}/${p.id}/screens/${encodeURIComponent(s.id)}/${at + 1}?bare&w=${turned ? h : w}&h=${turned ? w : h}` });
+      await send('Page.navigate', { url: `${root}/${p.id}/screens/${encodeURIComponent(s.id)}/${at + 1}?bare&w=${bare.width}&h=${bare.height}` });
       let ready = false;
       for (let i = 0; i < 50 && !ready; i += 1) {
         await new Promise((ok) => setTimeout(ok, 200));
@@ -272,7 +269,7 @@ async function measure(root: string) {
       const shot = decode(Buffer.from((await send('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
       const drawn = shot ? crop(shot, app.width, app.height) : null;
       if (!ready || !drawn || problems.length) { console.log(`✗ ${what}: ${ready ? '' : 'did not draw in 10 s '}${[...new Set(problems)].join('; ')}`); failed += 1; continue; }
-      const result = match(app, drawn, p.size.status, scale);
+      const result = match(app, drawn, status, scale);
       const rowsOff = result.worst.map((w) => `${Math.round(w.from / scale)}–${Math.round(w.to / scale)}`).join(', ');
       (scores[s.id] ??= {})[r.file] = result.score;
       /* What differs, for the screen page's Diff. */
@@ -281,9 +278,7 @@ async function measure(root: string) {
       const notes = [
         turned && !drewTurned ? 'the screenshot is turned from Foundations.device and the drawing is not: draw the state with Frame.phone({ turned: true })' : '',
         drewTurned && !turned ? 'the drawing is turned and the screenshot is not: draw the state unturned' : '',
-        Math.abs(w - device.width) > 1 ? `the screenshot is ${Math.round(w * 10) / 10} wide at ${Math.round(scale * 1000) / 1000}×, the board's phone ${device.width}${turned ? ' turned' : ''}: another phone?` : '',
-        Math.abs(h - device.height) > device.height * 0.01 ? `the screenshot is ${Math.round(h)} tall, the board's phone ${device.height}${turned ? ' turned' : ''}: another phone?` : '',
-        !density && p.system === System.ios && Math.abs(scale - Math.round(scale)) > 0.02 ? `${app.width} px wide is not ${device.width} at 2× or 3×: another phone? (Foundations.device.density says)` : '',
+        ...geometry,
         (isWebp(bytes) ? webpProfile(bytes) : profile(bytes)) ? `colour profile ${isWebp(bytes) ? webpProfile(bytes) : profile(bytes)}: convert it to sRGB` : '',
         isWebp(bytes) ? '' : 'stored as PNG: node server/webp.ts stores it as WebP',
       ].filter(Boolean);

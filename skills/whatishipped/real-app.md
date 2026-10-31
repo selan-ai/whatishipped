@@ -5,10 +5,11 @@ Every drawing is matched against a screenshot of the app, so get them before any
 
 ## Where they come from, cheapest first
 
-1. **The repo.** UI test references, snapshot images (`__Snapshots__`, Paparazzi, Roborazzi), store screenshots
-   (`fastlane/screenshots`). Store them in `refs/` under their own names as lossless WebP (copy them, then
-   `node <OUT>/server/webp.ts`). They need no run and no question.
-2. **The E2E or UI tests**, run while `server/capture.ts` takes each screen they reach.
+1. **The repo.** UI test references, snapshot images (`__Snapshots__`, Paparazzi, Roborazzi, Playwright
+   `*-snapshots/` and `test-results/`), store screenshots (`fastlane/screenshots`). Store them in `refs/` under their
+   own names as lossless WebP (copy them, then `node <OUT>/server/webp.ts`). They need no run and no question.
+2. **The E2E or UI tests.** Native: run while `server/capture.ts` takes each screen they reach. Web: the repo's own
+   approved E2E/UX suite (see "Web apps" below); `capture.ts` is native only and does not drive a browser.
 3. **The person:** they tap through the app on a simulator or emulator while `capture.ts` watches, or they send
    screenshots. A phone that is not `Foundations.device` lays the screen out a little differently: `--compare` warns
    of it, the refs.json note names the phone, and those differences are noted, not drawn.
@@ -28,6 +29,29 @@ screenshot turned from the device shows a turned state: `--compare` measures it 
 Screenshots show the account they were taken with. A person's own account goes into `refs/` and into anything hosted
 from the brandbook: ask before keeping such screenshots in it.
 
+## Web apps
+
+A web front end has no simulator, and `capture.ts` (which watches an iOS simulator or Android emulator) is not used.
+In order:
+1. Playwright artefacts already checked in: `*-snapshots/` beside the specs, `e2e/` or `tests/` screenshots,
+   `docs/` images. Convert the PNGs into `refs/` (`node <OUT>/server/webp.ts <in.png>... --out <OUT>/<platform>/refs`);
+   it keeps each name and refuses a side over 16383 px, which WebP cannot hold.
+2. The repository's approved E2E/UX suite, run as its README or CI config says (`npx playwright test`, or its own
+   script), after asking as below. Take the screenshots it writes and convert them the same way; if the suite takes none,
+   ask before adding `page.screenshot` calls outside the repo's tracked files (an ignored config or a copy of the spec).
+3. The person's screenshots.
+
+Pair by viewport and density: read the viewport (`use.viewport`, `deviceScaleFactor`) from the Playwright config or
+the project the test ran in; the screenshot's width over `deviceScaleFactor` is the viewport in CSS pixels, and
+`Foundations.device` is the main one (`density` the factor, `1` by default). A screenshot at another viewport pairs
+with a state drawn at that viewport; `--compare` warns when the width differs (a different height is
+valid for a full-page image, and does not warn). Prefer full-page images (`fullPage: true`): the state sets its
+height, `Frame.web({ body, style: '--phone-h: 2310px' })` (the screenshot's height over its density), and the match
+covers all of it. Without that override the drawing stands at `Foundations.device.height` and a taller page is
+cropped there; `--compare` sizes the page it draws from the screenshot, but a height the state sets itself wins, so it
+must equal the screenshot's. A screenshot of only
+the viewport pairs with a state that is scrolled to the top.
+
 ## Ask before running anything
 
 A run can need a secret only the person has (a CI token file), writes to shared backends and test accounts, and can
@@ -42,9 +66,9 @@ options are:
 Without tests: they tap through while you capture, or they send screenshots. Screenshots already in the repo are used
 in every case.
 
-## Capture
+## Capture (native)
 
-Do the repo's own setup first (environment, tools, the secret they hand over, which you delete afterwards). Then wrap
+For a web front end, take the screenshots from the suite instead (Web apps, above). Do the repo's own setup first (environment, tools, the secret they hand over, which you delete afterwards). Then wrap
 only the step that drives the app, from the repo, unedited, and run the teardown after it:
 
 ```sh
@@ -81,14 +105,16 @@ and the time.
 ## Screenshots that come later
 
 1. Look at every one, and find its screen, state and variant (account, flag, sheet height, scroll).
-2. Convert any not in sRGB (`sips -g profile`; phones often save Display P3), then store each as lossless WebP and
-   delete the original:
+2. Convert any phone screenshot not in sRGB (`sips -g profile`; phones often save Display P3), then store each as
+   lossless WebP and delete the original:
 
    ```sh
    sips -m "/System/Library/ColorSync/Profiles/sRGB Profile.icc" <in.png> --out <srgb.png>
    cwebp -quiet -lossless -exact -metadata icc <srgb.png> -o <platform>/refs/<name>.webp
    ```
 3. Keep the ones that show the app in `<platform>/refs/` under their own names, as WebP, and map them in refs.json
-   with a note naming the phone and the account. A screenshot of a screen not drawn yet goes on RECON's list for the next
+   with a note naming the phone and the account. PNGs already in sRGB (a web app's) convert in one go:
+   `node <OUT>/server/webp.ts <in.png>... --out <OUT>/<platform>/refs`; captured frames already are WebP.
+   A screenshot of a screen not drawn yet goes on RECON's list for the next
    batch; one of a state the board lacks becomes a new state.
 4. Pair each with its state (`app`) in the area file that draws it, and match (SKILL.md, step 8).

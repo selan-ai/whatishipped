@@ -1,6 +1,6 @@
 {
   "name": "brandbook",
-  "version": "2026.10.31.2",
+  "version": "2026.10.31.3",
   "private": true,
   "type": "module",
   "description": "A design board recreated from an app's code: every screen, state, component and journey, per platform.",

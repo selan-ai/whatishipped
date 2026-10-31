@@ -1,21 +1,21 @@
 ---
 name: whatishipped
-description: Use when asked for a brandbook, design board, design-system inventory or a catalogue of the screens, states, components or user journeys of a native mobile app (iOS SwiftUI or UIKit, Android Jetpack Compose or XML views); to recreate an app's UI as it ships, on one platform or across iOS and Android repos; or to add screens, flows, screenshots or a platform to such a brandbook.
+description: Use when asked for a brandbook, design board, design-system inventory or a catalogue of the screens, states, components or user journeys of a native mobile app (iOS SwiftUI or UIKit, Android Jetpack Compose or XML views) or a web front end (routed pages, Playwright tests); to recreate an app's UI as it ships, on one platform or across iOS and Android repos; or to add screens, flows, screenshots or a platform to such a brandbook.
 ---
 
 # whatishipped
 
 ## Overview
 
-Recreate a mobile app's UI as it ships: every screen in every state, its components, its foundations and the journeys
+Recreate an app's UI as it ships (a native mobile app or a web front end): every screen in every state, its components, its foundations and the journeys
 through it, as one brandbook for all its platforms. The brandbook is a small Node app (`npm start`, no dependencies)
 that anyone can run or host. Each platform has its own pages:
 - **Overview**, and a front page comparing the platforms feature by feature.
 - **Journeys:** what a person does, step by step, through real screens and states.
 - **Foundations:** colours grouped by meaning (each with what paints with it), type in real copy, shape, icons.
 - **Components**, laid out as Storybook does: every story, where it is defined, the screens and components that use it.
-- **Screens:** every state in a phone frame, beside the app's own screenshot of it, with what opens the screen, what it
-  opens and what it is made of.
+- **Screens:** every state in a phone frame (a web page in its viewport, `Frame.web`, with no phone around it), beside
+  the app's own screenshot of it, with what opens the screen, what it opens and what it is made of.
 - **Navigation:** features against features, then each feature's map.
 
 There are two sources: the code, and the running app. Code read alone gets layout, spacing and variants wrong in ways
@@ -46,7 +46,8 @@ folders could be the brandbook they mean, ask which.
 1. **Set up.** `<OUT>` is a new folder outside the app repos (`~/brandbooks/<app>`). Run `cp -R <this skill>/template
    <OUT>`, then make one folder per platform from the starter: `cp -R <OUT>/platform <OUT>/android` for a second
    platform, then `mv <OUT>/platform <OUT>/ios`. Fill `<OUT>/brandbook.json`: the app's name, each platform's `repo`
-   (absolute path) and `web` (its blob URL at the commit drawn: `git rev-parse HEAD`, `git remote get-url origin`),
+   (absolute path) and `web` (its blob URL at the commit drawn: `git rev-parse HEAD`, `git remote get-url origin`; this is the code link,
+   whatever the platform), and for a web front end `id` `web` (`Foundations.platform: 'web'`),
    and `same`, pairs of screens that are one screen under two ids; remove the starter's platforms and pairs you do
    not draw. `app/` and `server/` are the brandbook itself; `<OUT>/README.md` says what every file holds. The server
    runs on 4321; where that is taken, pick another (`PORT=4330 npm start`) and use it wherever this says 4321.
@@ -56,25 +57,36 @@ folders could be the brandbook they mean, ask which.
    screens). Write `<OUT>/<platform>/RECON.md`:
    - the UI tech, the token files (generated ones count), where the shared components live;
    - **the screens:** what a screen is here (anything that fills the phone or sits over it: a view controller, a
-     Fragment, a routed composable, a sheet, a full-screen modal), and each screen with an id, its **feature** and
+     Fragment, a routed composable, a sheet, a full-screen modal; on the web, a route of the router (Next.js `app/` or
+     `pages/`, React Router, Vue Router, SvelteKit, Angular routes) and each overlay a route or the URL opens: a
+     modal, drawer, intercepted or parallel route), and each screen with an id, its **feature** and
      roughly how many states it has. Features carry the same names on every platform, so the front page lines them
      up: a screen another platform already draws under the same id takes its feature, and new ones take the names
      the other platform uses;
    - **what opens what:** for every screen, each call that opens another (push, sheet, modal, tab, replace, deep
-     link, external), the element or state it comes from, and its `file:line`;
+     link, external), the element or state it comes from, and its `file:line`; on the web, `<a href>`, `<Link>`,
+     `router.push` and `navigate` calls, redirects and form actions are the calls, each with its route;
    - **journeys:** the paths a person takes (onboarding, the core loop, search, buying, settings), each as the
      screens it passes through, read from what opens what and the entry points (tabs, deep links, notifications);
-   - where states, sample words (fixtures, mocks, previews), fonts and images come from;
+   - where states, sample words (fixtures, mocks, previews), fonts and images come from; on the web, the states a
+     page has by query, auth, data or viewport (loading, empty, error, signed out), and the mocks or seed data its
+     tests use;
    - **the orientations** the app supports, from its code: iOS `UISupportedInterfaceOrientations` in Info.plist (and
      its `~ipad` key), Android `android:screenOrientation` on each activity in AndroidManifest.xml or
      `requestedOrientation` in code, a web manifest's `orientation`; and the screens that lay out differently in each;
-   - **the device** the UI tests run on, else the simulator or emulator the build scripts pick, as its screenshots
+   - **for the web, the viewport and breakpoints:** the viewports the Playwright config and tests use (`use.viewport`,
+     `devices[...]`, `setViewportSize`), and the breakpoints in the CSS or Tailwind config; the board's device is the
+     main viewport in CSS pixels (`{ width: 1440, height: 900, status: 0, clock: '', home: false, density: 1 }`), and a
+     breakpoint the tests screenshot is a screen state at that viewport. Foundations come from the CSS variables, theme
+     or Tailwind config and the font files; shared components from the component library or `components/`, counted by
+     the routes that use them. A web repo has no phone, simulator or orientation;
+   - **the device** (native) the UI tests run on, else the simulator or emulator the build scripts pick, as its screenshots
      show it: size, density (pixels per point), status bar height, clock, home indicator (`Foundations.device`). It
      stands the way the app does: an app that runs only in landscape (an iPad game, a tablet app) gets a device wider
      than tall, `{ width: 1180, height: 820 }` for an iPad (A16) on its side, and the board lays out by that;
    - **each design system** the app ships, and how much the app uses it by counting references (`Foundations.systems`);
    - **the real app:** screenshots already in the repo (snapshot or UI test references, store screenshots under
-     `fastlane/`), and the E2E or UI tests: framework, the command (CI config holds the whole sequence), the
+     `fastlane/`, Playwright `*-snapshots/` and `test-results/`), and the E2E or UI tests: framework, the command (CI config holds the whole sequence), the
      simulator or emulator, what a run needs (a backend, an account, a secret, a fake server, an SDK) and writes to,
      roughly how long it takes, and which screens it reaches;
    - **one scenario** every screen is drawn in (account, plan, flags, tabs): `Foundations.scenario`. A screen that only
@@ -85,7 +97,7 @@ folders could be the brandbook they mean, ask which.
 
    Note any hand-drawn board, Storybook or Figma export in the repo. It is off limits for drawing.
 3. **Get screenshots of the real app**, following `real-app.md`: the ones in the repo, else the E2E run under
-   `server/capture.ts`, else the person's. Ask before running anything. They end up in `<platform>/refs/`, mapped to
+   `server/capture.ts` (native), or the repo's approved Playwright suite (web), else the person's. Ask before running anything. They end up in `<platform>/refs/`, mapped to
    screens in `<platform>/refs.json`.
 4. **Choose what to draw** when the request is the whole app. Propose journeys from RECON, the core ones first, each
    with the screens it passes through and their count; one journey covers every platform it exists on.
@@ -182,7 +194,12 @@ commit (read it with `git show <commit>:<path>`) or to move the whole brandbook 
 - **Take words from the repo's fixtures, mocks and previews**, or from the screenshots. Invent them only where none exist.
 - **Use real sizes.** The phone is `Foundations.device`. A component demo that stands on the screen ground uses
   `wide`; a screen scrolled down uses `Frame.phone({ scroll })`.
-- **Draw the orientations the app supports.** `Foundations.device` stands in the app's main orientation (the only one
+- **A web page is drawn with `Frame.web`, in the viewport its screenshot was taken at**, never in a phone frame, with
+  no status bar, clock or home indicator. A full-page screenshot is as tall as the page: the state sets
+  its height, `Frame.web({ body, style: '--phone-h: <screenshot height / density>px' })` (and `--phone-w` for a
+  viewport other than `Foundations.device`), else the drawing is cropped at the device's height. A page that changes
+  at a breakpoint gets a state per viewport, each paired with a screenshot at that viewport.
+- **Draw the orientations the app supports** (native). `Foundations.device` stands in the app's main orientation (the only one
   for a landscape-only app), and every screen's first state, its thumbnail, is drawn that way. A screen whose code lays
   out differently turned gets those states too, through `Frame.phone({ turned: true })`, each paired with a screenshot
   taken that way round.
@@ -209,7 +226,8 @@ commit (read it with `git show <commit>:<path>`) or to move the whole brandbook 
 | A token table and a thousand findings (raw values, duplicates) | Draw the brandbook; differences show as drawn states |
 | One brandbook per platform | One brandbook, a folder per platform, the same journey ids |
 | Drawing all 150 screens of a big app before asking | Propose journeys, ask which, draw those |
-| Drawing blind while the repo has E2E tests | Ask to run them under `capture.ts`; draw each screen against its frames |
+| Drawing blind while the repo has E2E tests | Native: ask to run them under `capture.ts`. Web: use the repo's Playwright artefacts, else ask to run its approved suite (`real-app.md`) |
+| A web page in a phone frame, or a simulator asked for | `Frame.web` at the Playwright viewport; a web repo needs no simulator or `capture.ts` |
 | "Every page drew without a problem" taken to mean "matches the app" | `check.ts --all` finds errors; `--compare` measures the match |
 | Redrawing a brandbook to add one screen | Add an area; see Extending |
 | Every screen on one long page | The shell pages by feature, screen, group and component; keep data in the platform files |

@@ -8,11 +8,16 @@
  * beside it, pixel for pixel, the original is deleted, and every path that names it in the folders' text files
  * (refs.json, match.json, frames.json, the board's .js and .css, RECON.md) is rewritten. It prints any path it could not
  * resolve, to fix by hand. Running it again does nothing.
+ *
+ *   node server/webp.ts <in.png>... --out <dir>
+ * stores PNG files from elsewhere (a web app's Playwright screenshots, ones a person sends) in <dir>, created, each as
+ * a lossless WebP under its own name. One it cannot read, that is not a PNG, or with a side over WebP's 16383 px is
+ * named and the rest carry on; it exits 1 when any failed.
  */
 import { spawn, spawnSync } from 'node:child_process';
-import { readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
-import { dirname, join, relative, resolve, sep } from 'node:path';
+import { basename, dirname, extname, join, relative, resolve, sep } from 'node:path';
 import { decode as decodePng } from './png.ts';
 import type { Image } from './png.ts';
 
@@ -46,16 +51,20 @@ export const isWebp = (b: Buffer) => b.length > 12 && b.toString('ascii', 0, 4) 
 /* A PNG or JPEG file's bytes as lossless WebP. */
 export const toWebp = (image: Buffer) => run('cwebp', [...LOSSLESS, '-o', '-', '--', '-'], image);
 
+/* The file name of the nth (from 0) frame capture.ts keeps: 0001.webp. */
+export const frameFile = (n: number) => `${String(n + 1).padStart(4, '0')}.webp`;
+
 /* Pixels as lossless WebP. */
 export function encode(img: Image): Promise<Buffer> {
   const head = Buffer.from(`P7\nWIDTH ${img.width}\nHEIGHT ${img.height}\nDEPTH 4\nMAXVAL 255\nTUPLTYPE RGB_ALPHA\nENDHDR\n`, 'ascii');
   return run('cwebp', [...LOSSLESS, '-o', '-', '--', '-'], Buffer.concat([head, img.rgba]));
 }
 
-/* A WebP's pixels, through dwebp's PAM. */
+/* A WebP's pixels, through dwebp's PAM; null when it is not a WebP or dwebp cannot read it (cut short, damaged). */
 export async function decode(webp: Buffer): Promise<Image | null> {
   if (!isWebp(webp)) return null;
-  const pam = await run('dwebp', ['-quiet', '-pam', '-o', '-', '--', '-'], webp);
+  const pam = await run('dwebp', ['-quiet', '-pam', '-o', '-', '--', '-'], webp).catch(() => null);
+  if (!pam) return null;
   const end = pam.indexOf('ENDHDR\n');
   if (end < 0) return null;
   const head = pam.toString('ascii', 0, end);
@@ -179,12 +188,54 @@ export function platforms(root: string): string[] {
   return config.platforms.map((p) => join(root, p.id));
 }
 
-const mb = (n: number) => `${(n / 1048576).toFixed(1)} MB`;
+/* WebP stores each side in 14 bits. */
+export const MAX_SIDE = 16383;
 
-if (process.argv[1] && resolve(process.argv[1]) === resolve(import.meta.filename)) {
+export type Conversion = { input: string; output: string | null; failure: string | null };
+
+/* A PNG's width and height from its header, or null when the bytes are not a PNG. */
+const pngSize = (bytes: Buffer) => (bytes.length >= 24 && bytes.readUInt32BE(0) === 0x89504e47 ? { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) } : null);
+
+/* Each PNG as <outDir>/<its name>.webp; one that cannot be converted is reported and the rest carry on. */
+export async function convertFiles(inputs: string[], outDir: string): Promise<Conversion[]> {
+  const results: Conversion[] = [];
+  for (const input of inputs) {
+    const fail = (failure: string) => results.push({ input, output: null, failure });
+    let png: Buffer;
+    try { png = readFileSync(input); } catch (e) { fail(`${input}: cannot be read (${(e as Error).message})`); continue; }
+    const size = pngSize(png);
+    if (!size) { fail(`${input}: not a PNG`); continue; }
+    if (size.width > MAX_SIDE || size.height > MAX_SIDE) { fail(`${input}: ${size.width} × ${size.height} is over WebP's limit of ${MAX_SIDE} pixels a side; split or scale the screenshot`); continue; }
+    let webp: Buffer;
+    try { webp = await toWebp(png); } catch (e) { fail(`${input}: ${(e as Error).message}`); continue; }
+    const output = join(outDir, `${basename(input, extname(input))}.webp`);
+    mkdirSync(outDir, { recursive: true });
+    writeFileSync(output, webp);
+    results.push({ input, output, failure: null });
+  }
+  return results;
+}
+
+const mb = (n: number) => `${(n / 1048576).toFixed(1)} MB`;
+const isFolder = (path: string) => { try { return statSync(path).isDirectory(); } catch { return false; } };
+const USAGE = 'usage: node server/webp.ts [<folder>...]            the platform folders, or these, to WebP\n       node server/webp.ts <in.png>... --out <dir>   PNG files into <dir> as WebP';
+
+if (import.meta.main) {
   needWebp();
+  const args = process.argv.slice(2);
+  const at = args.indexOf('--out');
+  if (at >= 0) {
+    const out = args.at(at + 1) ?? '';
+    const inputs = args.filter((_, i) => i !== at && i !== at + 1);
+    if (!out || !inputs.length) { console.error(USAGE); process.exit(2); }
+    const results = await convertFiles(inputs, out);
+    for (const r of results) (r.failure ? console.error : console.log)(r.failure ?? `${r.input} -> ${r.output}`);
+    process.exit(results.some((r) => r.failure) ? 1 : 0);
+  }
+  const notFolders = args.filter((a) => !isFolder(a));
+  if (notFolders.length) { console.error(`${USAGE}\nnot a folder: ${notFolders.join(', ')} (PNG files go with --out <dir>)`); process.exit(2); }
   const root = resolve(import.meta.dirname, '..');
-  const folders = process.argv.slice(2).length ? process.argv.slice(2).map((f) => resolve(f)) : platforms(root);
+  const folders = args.length ? args.map((f) => resolve(f)) : platforms(root);
   for (const f of folders) if (!f.startsWith(root + sep) && f !== root) console.log(`note: ${f} is outside the brandbook`);
   const { converted, before, after } = await convert(folders);
   const left = rewrite(folders, root);

@@ -10,6 +10,10 @@
 .phone { position: relative; width: var(--phone-w); height: var(--phone-h); overflow: hidden; background: var(--screen-ground, #000); color: var(--screen-ink, #fff); font-family: var(--screen-font, system-ui); }
 .phone--ios { border-radius: 55px; box-shadow: 0 0 0 10px #050608, 0 0 0 11px #2b2f38, 0 30px 60px rgba(0, 0, 0, 0.5); }
 .phone--android { border-radius: 36px; box-shadow: 0 0 0 9px #050608, 0 0 0 10px #2b2f38, 0 30px 60px rgba(0, 0, 0, 0.5); }
+/* A web viewport: the page at Foundations.device's size, no hardware, no bezel, and no bars to clear. */
+.phone--web { border-radius: 0; box-shadow: 0 0 0 1px #2b2f38; }
+.phone--web .phone__body { padding: 0; }
+.phone--web .phone__page { --page-h: var(--phone-h); }
 
 /* The bar region over the page; the page runs on under it. --bar-back is the app's own bar backing, if it has one. */
 .phone__top { position: absolute; top: 0; left: 0; right: 0; z-index: 5; background: var(--bar-back, transparent); }

@@ -5,7 +5,7 @@
 import { slug } from './model.ts';
 import type { Model } from './model.ts';
 import type { How, Source } from './types.ts';
-import { hows, MATCHED, Orientation } from './types.ts';
+import { hows, MATCHED, Orientation, System } from './types.ts';
 
 export const esc = (s: unknown) => String(s ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 const enc = encodeURIComponent;
@@ -31,7 +31,7 @@ export const url = {
 };
 
 /* How much of a state matches the app's screenshot (check.ts --compare), as a chip. */
-export const matchChip = (score: number | null) => (score === null ? '' : `<span class="b-match b-match--${score >= MATCHED ? 'good' : score >= MATCHED - 10 ? 'fair' : 'poor'}" title="Share of the screen below the status bar that matches the app's screenshot">${score}% match</span>`);
+export const matchChip = (score: number | null, system: System) => (score === null ? '' : `<span class="b-match b-match--${score >= MATCHED ? 'good' : score >= MATCHED - 10 ? 'fair' : 'poor'}" title="${system === System.web ? 'Share of the page' : 'Share of the screen below the status bar'} that matches the app's screenshot">${score}% match</span>`);
 export const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 export const how = (h: How) => `<span class="b-how b-how--${hows.parse(h, 'push')}">${esc(h)}</span>`;
 export const screenLink = (m: Model, id: string) => {
@@ -131,3 +131,13 @@ export const mini = (m: Model, zoom: number) => (m.orientation === Orientation.l
 /* A phone drawn at a fraction of its size, sized before it draws so the page does not jump. */
 export const phoneAt = (render: () => string, what: string, zoom: number) =>
   lazy(render, what, zoom === 1 ? 'b-full' : 'b-mini', `width:calc(var(--phone-w) * ${zoom});height:calc(var(--phone-h) * ${zoom});--mini:${zoom}`);
+
+/* The board's zoom until a person picks another (board.css and shell.ts start there too). */
+export const DEFAULT_ZOOM = 0.65;
+
+/* The zoom a drawing follows: `zoom` at the default, scaling with the board's zoom buttons from there. */
+export const followingZoom = (zoom: number) => `calc(var(--zoom) * ${zoom} / ${DEFAULT_ZOOM})`;
+
+/* A phone drawn at `scale` (a CSS number), so a drawing that follows the zoom buttons keeps its box in step. */
+export const phoneScaled = (render: () => string, what: string, scale: string) =>
+  lazy(render, what, 'b-mini', `--mini:${scale};width:calc(var(--phone-w) * var(--mini));height:calc(var(--phone-h) * var(--mini))`);

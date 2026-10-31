@@ -74,7 +74,7 @@ export function screenPage(m: Model, id: string): Page {
     const look = shots.some((r) => r.match === null || r.match < MATCHED) ? View.both : View.drawing;
     const masks = shots.flatMap((r) => (r.diff ? [`<img class="b-mask" src="${esc(r.diff)}" alt="" loading="lazy">`] : [])).join('');
     const choices = shots.length ? [View.app, View.drawing, ...(masks ? [View.diff] : [])] : [];
-    const tools = shots.length ? `<span class="b-phone__tools">${shots.map((r) => matchChip(r.match)).join(' ')}<span class="b-seg b-view" role="group" aria-label="Show">${choices.map((v) => `<button type="button" data-show="${v}">${label[v]}</button>`).join('')}</span><span class="b-phone__both b-muted">the app, then the drawing</span></span>` : '';
+    const tools = shots.length ? `<span class="b-phone__tools">${shots.map((r) => matchChip(r.match, m.here.system)).join(' ')}<span class="b-seg b-view" role="group" aria-label="Show">${choices.map((v) => `<button type="button" data-show="${v}">${label[v]}</button>`).join('')}</span><span class="b-phone__both b-muted">the app, then the drawing</span></span>` : '';
     const view = shots.length ? (comparing ? View.both : look) : View.drawing;
     return `
     <figure class="b-phone" id="state-${i + 1}" data-view="${view}"${shots.length ? ` data-look="${look}"` : ''} style="--shots:${shots.length}">

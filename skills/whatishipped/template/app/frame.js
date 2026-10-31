@@ -1,5 +1,7 @@
 /*
  * The phone around a screen, and the small helpers every area uses. The platform comes from window.Foundations.
+ * Frame.web({ body, style }): a web page in its viewport (Foundations.device is the browser's content area in CSS
+ * pixels, e.g. 1440 × 900); no status bar, no home indicator, no browser chrome. style as for the phone.
  * Frame.phone({ nav, body, tabs, bottom, toast, sheet, over }): every slot is HTML or ''.
  *   nav     the app's top bar, drawn under the status bar; '' leaves the status bar bare over the page
  *   body    the page, which runs on under the bars
@@ -45,6 +47,8 @@ window.Frame = (() => {
     return `<div class="phone phone--${p}${turn}" style="${style ?? ''}"><div class="phone__top${top}">${status()}${nav ?? ''}</div><div class="phone__body"><div class="phone__page" style="margin-top:${-(scroll ?? 0)}px">${body ?? ''}</div></div>${tabs ? `<div class="phone__tabs">${tabs}</div>` : ''}${bottom ? `<div class="phone__bottom">${bottom}</div>` : ''}${toast ? `<div class="phone__toast">${toast}</div>` : ''}${dim}${sheet ? `<div class="phone__sheet">${sheet}</div>` : ''}${overDim}${over ? `<div class="phone__over">${over}</div>` : ''}${banner ? `<div class="phone__banner">${banner}</div>` : ''}${window.Foundations.device.home === false ? '' : '<div class="phone__home"></div>'}</div>`;
   }
 
+  const web = ({ body, style }) => `<div class="phone phone--web" style="${style ?? ''}"><div class="phone__body"><div class="phone__page">${body ?? ''}</div></div></div>`;
+
   /*
    * A demo's states: d('label', () => html); d('label', () => html, 'wide') for one that stands on the screen ground at
    * phone width; d('label', () => html, 'bleed') for a full-width bar that runs to the phone's edges.
@@ -57,5 +61,5 @@ window.Frame = (() => {
    */
   const slot = (name, params) => (window.C[name] ? window.C[name](params) : `<div style="padding:10px 12px;border:1px dashed rgba(255,255,255,.35);border-radius:10px;font:11px ui-monospace,monospace;color:rgba(255,255,255,.6)">${esc(name)}</div>`);
 
-  return { esc, phone, d, slot };
+  return { esc, phone, web, d, slot };
 })();

@@ -1,0 +1,2 @@
+:root { --t-background: #fff; --screen-ground: var(--t-background); }
+.t-button { background: var(--t-background); }

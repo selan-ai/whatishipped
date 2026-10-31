@@ -18,8 +18,8 @@ export const How = hows.names;
 /* A state matching its screenshot this much (check.ts --compare) is done, once nothing in its red picture is a shape. */
 export const MATCHED = 95;
 
-/* The phone's system: Foundations.platform. */
-export const systems = closed(['ios', 'android']);
+/* The device's system: Foundations.platform. A web board's device is a desktop viewport, with no phone around it. */
+export const systems = closed(['ios', 'android', 'web']);
 export type System = (typeof systems.values)[number];
 export const System = systems.names;
 
