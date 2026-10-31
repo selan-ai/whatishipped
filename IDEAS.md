@@ -11,4 +11,3 @@ What we would build next. None of it is promised; an issue saying which you want
   under 44 points.
 - **To Figma.** The drawn components and screens as frames, for teams whose design work starts there.
 - **Device farms.** Screenshots captured on Firebase Test Lab or BrowserStack instead of a local simulator.
-- **Web apps.** The same pages for a web front end, drawn against Playwright screenshots.

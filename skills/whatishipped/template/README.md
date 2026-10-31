@@ -30,11 +30,17 @@ npm run check -- --all http://localhost:4321                         # every pag
 npm run check -- --compare http://localhost:4321 --shot /tmp/match   # each drawn state against the app's screenshot
 ```
 
-Screenshots while the app's tests run, from the app's repo, so the command runs there:
+Screenshots while a native app's tests run, from the app's repo, so the command runs there (`capture.ts` is for iOS
+simulators and Android emulators; a web board's screenshots come from the site's own Playwright suite):
 
 ```sh
 node <this folder>/server/capture.ts --out <this folder>/android/refs --android emulator-5554 -- <the E2E command>
 ```
+
+A web board (`Foundations.platform: 'web'`) is drawn with `Frame.web` at the browser's viewport in CSS pixels
+(1440 × 900 for the desktop starter), against full-page Playwright screenshots; there is no phone frame.
+New screenshots are stored as WebP, and an earlier PNG still works. In the skill's repository, the regression
+tests run with `node --test tests/*.test.ts`.
 
 ## What is where
 
@@ -46,7 +52,7 @@ node <this folder>/server/capture.ts --out <this folder>/android/refs --android 
 | `<platform>/components.js`, `components.css` | The components most screens share, each with its stories |
 | `<platform>/areas.js` | The area files, in order; each `area-<name>.js` and `.css` draws a few screens and the components only they use |
 | `<platform>/journeys.js` | Journeys: steps through screens and states |
-| `<platform>/refs/`, `refs.json` | Screenshots of the real app, and the screens they show; a state names its own with `app` |
+| `<platform>/refs/`, `refs.json` | Screenshots of the real app (WebP; PNG still works), and the screens they show; a state names its own with `app` |
 | `<platform>/match.json` | How much of each paired state matches its screenshot, written by `check.ts --compare` |
 | `<platform>/RECON.md` | What the code holds: screens, what opens what, journeys, sources, gaps |
 | `<platform>/sources.json`, `assets/` | Source paths found in the repo; fonts and images the drawings use |

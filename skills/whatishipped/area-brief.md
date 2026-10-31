@@ -3,7 +3,7 @@
 Send one per area, filled in. Each area agent writes only its own two files, so all of them can work at once.
 
 ```
-You are recreating part of a mobile app's brandbook in HTML/CSS, from the app's code, checked against screenshots of
+You are recreating part of an app's brandbook (a native mobile app, or a web front end) in HTML/CSS, from the app's code, checked against screenshots of
 the app.
 
 ## Context
@@ -21,7 +21,7 @@ Take sample words from <FIXTURES / MOCKS / PREVIEWS>, the app's own test data.
 Read `<OUT>/app/frame.js`, and in `<OUT>/<PLATFORM>/`: `foundations.js`, `tokens.css`, `components.js`,
 `components.css`, `areas.js`, and the one or two finished `area-*.js` closest to yours (<CLOSEST AREAS>). Match them.
 How screens use the phone frame here: <FRAME CONVENTIONS FROM RECON, e.g. bars, insets, page helpers>.
-The device is <Foundations.device: NAME, WIDTH × HEIGHT, PORTRAIT OR LANDSCAPE>; draw every screen that way round. A
+The device is <Foundations.device: NAME, WIDTH × HEIGHT, PORTRAIT OR LANDSCAPE; for web the viewport>; draw every screen that way round. A
 state the app lays out differently turned is `Frame.phone({ turned: true, ... })`, after the screen's states that way round.
 - Draw each component as a function named after the code's type, with that type's parameters, and add it with
   `Object.assign(window.C, { ... })`.
@@ -42,6 +42,13 @@ state the app lays out differently turned is `Frame.phone({ turned: true, ... })
   a background gradient with hard stops, which lands where it should.
 - Icons take the code's own stroke width: `Icons.icon(name, size, 2.2)`. The home indicator's size and place are
   `--home-w`, `--home-h` and `--home-bottom`.
+- **Web platform** (`Foundations.platform: 'web'`): a screen is a route or an overlay it opens; draw it with
+  `Frame.web({ body, style })` at the viewport in `Foundations.device` (CSS pixels), with no status bar, home
+  indicator or phone frame. A full-page screenshot is as tall as the page: draw the whole page. A breakpoint
+  the tests screenshot is a state at that viewport (`style: '--phone-w: <px>'`). Links are `<a>` elements
+  whose `opens` entries name the route and the `source` file:line (`how`: `push` for a link or `router.push`,
+  `modal` or `sheet` for an overlay). States are the page's loading, empty, error, signed-out and data
+  branches; components are the shared ones, sourced from the repo (`components/Button.tsx:12`).
 - Keep comments few, plain and in English.
 
 ## The real app

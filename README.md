@@ -1,15 +1,15 @@
 # whatishipped
 
-Your mobile app's UI as it ships, recreated from its code and checked against its own screenshots.
+Your app's UI as it ships, recreated from its code and checked against its own screenshots.
 
-A [Claude Code](https://claude.com/claude-code) skill. Point it at an iOS or Android repo and it draws every screen in
+A [Claude Code](https://claude.com/claude-code) skill. Point it at an iOS, Android or web front-end repo and it draws every screen in
 every state, the components, colours and type, and the journeys through the app, as one brandbook you can run, host
 and click through.
 
 ![The front page of a brandbook: iOS and Android side by side](docs/front.png)
 
 Design files drift. Figma shows what someone drew last spring; the app shows what shipped. whatishipped starts from
-the other end, the code: it reads SwiftUI, UIKit, Jetpack Compose or XML views and draws each one in HTML. Then it puts
+the other end, the code: it reads SwiftUI, UIKit, Jetpack Compose or XML views, or a web app's routes and components, and draws each one in HTML. Then it puts
 every drawing beside a screenshot of the real app and measures how much of it matches, so you know which screens to
 trust.
 
@@ -77,8 +77,9 @@ Code read alone gets spacing and variants wrong in ways no check catches. A boar
 80%. So every screen gets a screenshot first, from the cheapest place that has one:
 
 1. **The repo.** UI test references, snapshot tests, store screenshots. No run, no question.
-2. **The E2E tests**, run while `server/capture.ts` watches the simulator or emulator and keeps each screen that
-   settles, tagged with the test that reached it. It asks first: tests can need a secret, write to a backend or take
+2. **The E2E tests.** Native: run while `server/capture.ts` watches the simulator or emulator and keeps each screen
+   that settles, tagged with the test that reached it. Web: the site's own Playwright suite, full-page images paired
+   by viewport; `capture.ts` is native only. It asks first: tests can need a secret, write to a backend or take
    hours.
 3. **You.** Tap through the app while it captures, or send screenshots.
 
@@ -106,7 +107,8 @@ anything you host.
 
 - Claude Code. A whole app is a big job: the demo took eight agents, drawing in parallel, about an hour.
 - Node 22.18 or later, and Google Chrome for the checks.
-- Xcode's simulator or `adb` only to capture screenshots.
+- Xcode's simulator or `adb` only to capture native screenshots; a web app uses its own Playwright setup.
+- Screenshots are stored as WebP (earlier PNG references still work); Chrome encodes them.
 
 No npm packages, anywhere.
 
@@ -136,6 +138,7 @@ change on a real repo, then check the board it made:
 ```sh
 node server/check.ts --all http://localhost:4321        # every page draws without an error
 node server/check.ts --compare http://localhost:4321    # every drawing against its screenshot
+node --test tests/*.test.ts                             # the regression tests, from the repository root
 ```
 
 ## License
