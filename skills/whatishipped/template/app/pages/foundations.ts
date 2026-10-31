@@ -2,7 +2,7 @@
 import { cover } from '../model.ts';
 import type { Model } from '../model.ts';
 import type { Token } from '../types.ts';
-import { componentLink, esc, phoneAt, plural, url } from '../ui.ts';
+import { componentLink, esc, mini, phoneAt, plural, url } from '../ui.ts';
 import type { Page } from './page.ts';
 
 const css = () => getComputedStyle(document.documentElement);
@@ -43,7 +43,7 @@ export function tokenPage(m: Model, name: string): Page {
       <h2 class="b-h2">Screens that show it <span class="b-count">${u.screens.length}</span></h2>
       <div class="b-thumbs">${u.screens.map((id) => {
         const s = m.byId.get(id);
-        return s ? `<a class="b-thumb" href="${url.screen(p, id)}">${phoneAt(() => s.states[cover(s, null)].render(), s.name, 0.24)}<span class="b-thumb__name">${esc(s.name)}</span></a>` : '';
+        return s ? `<a class="b-thumb" href="${url.screen(p, id)}">${phoneAt(() => s.states[cover(s, null)].render(), s.name, mini(m, 0.24))}<span class="b-thumb__name">${esc(s.name)}</span></a>` : '';
       }).join('') || '<span class="b-muted">None.</span>'}</div>`,
   };
 }

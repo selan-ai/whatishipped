@@ -1,6 +1,7 @@
 /*
  * The phone a screen stands in, at the size of the device the app's UI tests run on (Foundations.device sets
- * --phone-w and --phone-h). Defaults: iOS 393 × 852 with a 54 status bar, Android 412 × 915 with a 40 one.
+ * --phone-w and --phone-h, wider than tall for a landscape app). Defaults: iOS 393 × 852 with a 54 status bar,
+ * Android 412 × 915 with a 40 one.
  * The app's own ground is --screen-ground (tokens.css).
  */
 :root { --phone-w: 393px; --phone-h: 852px; --status-h: 54px; }
@@ -34,12 +35,13 @@
 .phone__sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 9; }
 .phone__dim--over { z-index: 10; }
 .phone__banner { position: absolute; left: 8px; right: 8px; top: calc(var(--status-h) + 4px); z-index: 11; }
-.phone--landscape { width: var(--phone-h); height: var(--phone-w); }
+.phone--turned { width: var(--phone-h); height: var(--phone-w); }
 /* A sheet's own backing; set --sheet-back to the app's. */
 .phone__sheet > * { background: var(--sheet-back, transparent); }
 .phone__over { position: absolute; inset: 0; z-index: 11; display: grid; place-items: center; padding: 24px; }
 .phone--ios .phone__home { position: absolute; left: 50%; bottom: var(--home-bottom, 8px); transform: translateX(-50%); width: var(--home-w, 139px); height: var(--home-h, 5px); border-radius: 3px; background: var(--home-ink, #fff); z-index: 10; }
 .phone--android .phone__home { position: absolute; left: 50%; bottom: var(--home-bottom, 8px); transform: translateX(-50%); width: var(--home-w, 108px); height: var(--home-h, 4px); border-radius: 2px; background: var(--home-ink, #fff); opacity: 0.8; z-index: 10; }
 
-/* The cutout sits on the long edge in landscape, where the status bar is not drawn as such. */
-.phone--landscape .phone__punch, .phone--landscape .phone__island { display: none; }
+/* The cutout sits on the long edge in landscape, where the status bar is not drawn as such; a tablet has none. */
+.phone--turned .phone__punch, .phone--turned .phone__island { display: none; }
+[data-orientation="landscape"] .phone__punch, [data-orientation="landscape"] .phone__island { display: none; }

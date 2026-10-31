@@ -5,7 +5,7 @@
 import { slug } from './model.ts';
 import type { Model } from './model.ts';
 import type { How, Source } from './types.ts';
-import { hows, MATCHED } from './types.ts';
+import { hows, MATCHED, Orientation } from './types.ts';
 
 export const esc = (s: unknown) => String(s ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 const enc = encodeURIComponent;
@@ -77,8 +77,11 @@ export function hydrate(root: HTMLElement) {
     const draw = pending.get(el.dataset.lazy ?? '');
     if (draw) el.innerHTML = draw();
     el.classList.add('b-lazy--on');
-    /* A full-size phone takes the size it drew at (a landscape one is wider than the portrait placeholder). */
+    /* A full-size phone takes the size it drew at (a turned one is the other way round from its placeholder). */
     if (el.classList.contains('b-full')) el.removeAttribute('style');
+    /* So does a thumbnail of a turned state: its box turns with it. */
+    else if (el.classList.contains('b-mini') && el.querySelector(':scope > .phone--turned')) Object.assign(el.style, { width: 'calc(var(--phone-h) * var(--mini))', height: 'calc(var(--phone-w) * var(--mini))' });
+    if (landscape() && el.matches(fits)) fit(el);
   };
   const els = [...root.querySelectorAll<HTMLElement>('[data-lazy]')];
   if (eager) { els.forEach(fill); return; }
@@ -88,6 +91,42 @@ export function hydrate(root: HTMLElement) {
   els.forEach((el) => observer?.observe(el));
 }
 export function resetLazy() { pending = new Map(); }
+
+/*
+ * On a landscape device a story can be wider than the room it stands in (an overlay as wide as the tablet): it takes
+ * the whole row of stories, then is scaled down until it fits, never up; a component card's preview fits its box both
+ * ways. A portrait board draws every story at its own size, as it always has.
+ */
+const fits = '.b-story__canvas > .b-lazy, .b-canvas > .b-lazy, .b-preview > .b-lazy';
+const landscape = () => document.documentElement.dataset.orientation === Orientation.landscape;
+function fit(el: HTMLElement) {
+  const box = el.parentElement as HTMLElement;
+  /* Its own size first: a preview's box would cap it at the box's width. */
+  Object.assign(el.style, { zoom: '', maxWidth: 'none' });
+  const drawn = el.getBoundingClientRect();
+  if (!drawn.width || !drawn.height) return;
+  const pad = getComputedStyle(box);
+  const bleed = el.classList.contains('b-demo__in--bleed');
+  const room = box.clientWidth - (bleed ? 0 : parseFloat(pad.paddingLeft) + parseFloat(pad.paddingRight));
+  const story = box.closest<HTMLElement>('.b-story');
+  if (story && drawn.width > room && !story.classList.contains('b-story--span')) {
+    story.classList.add('b-story--span');
+    fit(el);
+    return;
+  }
+  const tall = box.clientHeight - parseFloat(pad.paddingTop) - parseFloat(pad.paddingBottom);
+  const scale = Math.min(1, room / drawn.width, box.classList.contains('b-preview') ? tall / drawn.height : 1);
+  if (scale < 1) el.style.zoom = String(Number(getComputedStyle(el).zoom || 1) * scale);
+}
+addEventListener('resize', () => {
+  if (landscape()) document.querySelectorAll<HTMLElement>(fits).forEach((el) => { if (el.classList.contains('b-lazy--on')) fit(el); });
+});
+
+/*
+ * The zoom a thumbnail is drawn at. Pages name it for a portrait phone; a landscape device takes the zoom that makes
+ * it as wide as it would be standing up, so it keeps the room a row of thumbnails, a card or a step gives it.
+ */
+export const mini = (m: Model, zoom: number) => (m.orientation === Orientation.landscape ? Math.round((zoom * m.F.device.height / m.F.device.width) * 1e4) / 1e4 : zoom);
 
 /* A phone drawn at a fraction of its size, sized before it draws so the page does not jump. */
 export const phoneAt = (render: () => string, what: string, zoom: number) =>

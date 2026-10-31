@@ -1,14 +1,14 @@
 /* Screens: by feature, one feature, one screen in every state with what opens it, what it opens and what it is made of. */
 import { cover, twin } from '../model.ts';
 import type { Model } from '../model.ts';
-import { componentLink, esc, how, matchChip, phoneAt, plural, screenLink, sources, url } from '../ui.ts';
+import { componentLink, esc, how, matchChip, mini, phoneAt, plural, screenLink, sources, url } from '../ui.ts';
 import { graph } from './navigation.ts';
 import type { Page } from './page.ts';
 
 const thumb = (m: Model, id: string, zoom: number) => {
   const s = m.byId.get(id);
   if (!s) return '';
-  return `<a class="b-thumb" href="${url.screen(m.here.id, s.id)}">${phoneAt(() => s.states[cover(s, null)].render(), s.name, zoom)}<span class="b-thumb__name">${esc(s.name)}</span><span class="b-thumb__n">${plural(s.states.length, 'state', 'states')}</span></a>`;
+  return `<a class="b-thumb" href="${url.screen(m.here.id, s.id)}">${phoneAt(() => s.states[cover(s, null)].render(), s.name, mini(m, zoom))}<span class="b-thumb__name">${esc(s.name)}</span><span class="b-thumb__n">${plural(s.states.length, 'state', 'states')}</span></a>`;
 };
 
 export function screensPage(m: Model): Page {
@@ -17,7 +17,7 @@ export function screensPage(m: Model): Page {
     const list = m.screens.filter((s) => s.feature === f);
     const states = list.reduce((n, s) => n + s.states.length, 0);
     return `<a class="b-card b-feature" href="${url.feature(p, f)}">
-      <div class="b-feature__thumbs">${list.slice(0, 4).map((s) => phoneAt(() => s.states[cover(s, null)].render(), s.name, 0.2)).join('')}</div>
+      <div class="b-feature__thumbs">${list.slice(0, 4).map((s) => phoneAt(() => s.states[cover(s, null)].render(), s.name, mini(m, 0.2))).join('')}</div>
       <div class="b-card__title">${esc(f)}</div><div class="b-card__meta">${plural(list.length, 'screen', 'screens')} · ${plural(states, 'state', 'states')}</div>
       <div class="b-card__list">${list.map((s) => esc(s.name)).join(' · ')}</div></a>`;
   }).join('');

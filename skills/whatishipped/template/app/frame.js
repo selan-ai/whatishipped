@@ -11,7 +11,8 @@
  *   banner  a notification that hangs from the top (an in-app banner)
  *   scroll  how far the page is scrolled under the bar, in points; the bar then shows the app's scrolled edge
  *   style   custom properties for this one phone, such as '--body-bottom: 200px'
- *   landscape  the phone turned on its side
+ *   turned  the device a quarter turn from Foundations.device: a portrait phone on its side, a landscape tablet upright
+ *           (`landscape`, its first name, still works). A landscape-only app sets Foundations.device landscape instead.
  */
 window.Frame = (() => {
   const esc = (s) => String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
@@ -34,12 +35,14 @@ window.Frame = (() => {
     return `<div class="phone__status"><span>${clock()}</span><span class="phone__island"></span><span class="phone__icons">${ios.signal}${ios.wifi}${ios.battery}</span></div>`;
   }
 
-  function phone({ nav, body, tabs, bottom, toast, sheet, over, banner, scroll, style, landscape }) {
+  function phone({ nav, body, tabs, bottom, toast, sheet, over, banner, scroll, style, turned, landscape }) {
     const p = platform();
+    /* phone--landscape stays beside phone--turned for boards whose CSS styles the first name. */
+    const turn = turned || landscape ? ' phone--turned phone--landscape' : '';
     const dim = sheet || over ? '<div class="phone__dim"></div>' : '';
     const overDim = sheet && over ? '<div class="phone__dim phone__dim--over"></div>' : '';
     const top = nav ? (scroll ? ' phone__top--scrolled' : '') : ' phone__top--bare';
-    return `<div class="phone phone--${p}${landscape ? ' phone--landscape' : ''}" style="${style ?? ''}"><div class="phone__top${top}">${status()}${nav ?? ''}</div><div class="phone__body"><div class="phone__page" style="margin-top:${-(scroll ?? 0)}px">${body ?? ''}</div></div>${tabs ? `<div class="phone__tabs">${tabs}</div>` : ''}${bottom ? `<div class="phone__bottom">${bottom}</div>` : ''}${toast ? `<div class="phone__toast">${toast}</div>` : ''}${dim}${sheet ? `<div class="phone__sheet">${sheet}</div>` : ''}${overDim}${over ? `<div class="phone__over">${over}</div>` : ''}${banner ? `<div class="phone__banner">${banner}</div>` : ''}${window.Foundations.device.home === false ? '' : '<div class="phone__home"></div>'}</div>`;
+    return `<div class="phone phone--${p}${turn}" style="${style ?? ''}"><div class="phone__top${top}">${status()}${nav ?? ''}</div><div class="phone__body"><div class="phone__page" style="margin-top:${-(scroll ?? 0)}px">${body ?? ''}</div></div>${tabs ? `<div class="phone__tabs">${tabs}</div>` : ''}${bottom ? `<div class="phone__bottom">${bottom}</div>` : ''}${toast ? `<div class="phone__toast">${toast}</div>` : ''}${dim}${sheet ? `<div class="phone__sheet">${sheet}</div>` : ''}${overDim}${over ? `<div class="phone__over">${over}</div>` : ''}${banner ? `<div class="phone__banner">${banner}</div>` : ''}${window.Foundations.device.home === false ? '' : '<div class="phone__home"></div>'}</div>`;
   }
 
   /*

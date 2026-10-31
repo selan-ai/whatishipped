@@ -15,7 +15,9 @@
  * per state and screenshot: the app, the drawing and what differs in red side by side at 1:1 points; -zoom, the same
  * three for the rows that differ most, at the screenshot's own scale; and -drawing, the drawing alone at that scale.
  * The screenshot's scale is Foundations.device.density (pixels per point), else its width over the device's. It warns when a screenshot looks taken on another phone (an iPhone screenshot not at 2× or 3×
- * of the board's width, or of another height) or names a colour profile other than sRGB.
+ * of the board's width, or of another height) or names a colour profile other than sRGB. A screenshot the other way
+ * round from Foundations.device (landscape on a portrait phone) is a turned state: the device is measured turned, and
+ * it warns when the drawing is not (Frame.phone's turned).
  * CHROME names another Chrome binary.
  */
 import { spawn } from 'node:child_process';
@@ -143,17 +145,22 @@ async function measure(root: string) {
       /* The phone at the screenshot's exact size in points (411.43 dp at 2.625), the page a whole number of points around
          it, and the shot cropped to the screenshot: nothing is resampled. */
       const density = Number(p.size.density) || 0;
-      const scale = density > 0 ? density : app.width / p.size.width;
+      /* A screenshot the other way round from the device shows it turned. */
+      const turned = (app.width > app.height) !== (p.size.width > p.size.height);
+      const device = turned ? { width: p.size.height, height: p.size.width } : { width: p.size.width, height: p.size.height };
+      const scale = density > 0 ? density : app.width / device.width;
       const w = app.width / scale;
       const h = app.height / scale;
       await send('Emulation.setDeviceMetricsOverride', { width: Math.ceil(w), height: Math.ceil(h), deviceScaleFactor: scale, mobile: false });
-      await send('Page.navigate', { url: `${root}/${p.id}/screens/${encodeURIComponent(s.id)}/${at + 1}?bare&w=${w}&h=${h}` });
+      /* A turned phone stands as --phone-h × --phone-w, so a turned screenshot's sides go in the other way round. */
+      await send('Page.navigate', { url: `${root}/${p.id}/screens/${encodeURIComponent(s.id)}/${at + 1}?bare&w=${turned ? h : w}&h=${turned ? w : h}` });
       let ready = false;
       for (let i = 0; i < 50 && !ready; i += 1) {
         await new Promise((ok) => setTimeout(ok, 200));
         ready = await value("!!document.querySelector('.b-bare') && document.fonts.status === 'loaded' && [...document.images].every((i) => i.complete)") === true;
       }
       await new Promise((ok) => setTimeout(ok, 300));
+      const drewTurned = await value("!!document.querySelector('.b-bare > .phone--turned')") === true;
       const shot = decode(Buffer.from((await send('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
       const drawn = shot ? crop(shot, app.width, app.height) : null;
       if (!ready || !drawn || problems.length) { console.log(`✗ ${what}: ${ready ? '' : 'did not draw in 10 s '}${[...new Set(problems)].join('; ')}`); failed += 1; continue; }
@@ -161,9 +168,11 @@ async function measure(root: string) {
       const rowsOff = result.worst.map((w) => `${Math.round(w.from / scale)}–${Math.round(w.to / scale)}`).join(', ');
       (scores[s.id] ??= {})[r.file] = result.score;
       const notes = [
-        Math.abs(w - p.size.width) > 1 ? `the screenshot is ${Math.round(w * 10) / 10} wide at ${Math.round(scale * 1000) / 1000}×, the board's phone ${p.size.width}: another phone?` : '',
-        Math.abs(h - p.size.height) > p.size.height * 0.01 ? `the screenshot is ${Math.round(h)} tall, the board's phone ${p.size.height}: another phone?` : '',
-        !density && p.system === System.ios && Math.abs(scale - Math.round(scale)) > 0.02 ? `${app.width} px wide is not ${p.size.width} at 2× or 3×: another phone? (Foundations.device.density says)` : '',
+        turned && !drewTurned ? 'the screenshot is turned from Foundations.device and the drawing is not: draw the state with Frame.phone({ turned: true })' : '',
+        drewTurned && !turned ? 'the drawing is turned and the screenshot is not: draw the state unturned' : '',
+        Math.abs(w - device.width) > 1 ? `the screenshot is ${Math.round(w * 10) / 10} wide at ${Math.round(scale * 1000) / 1000}×, the board's phone ${device.width}${turned ? ' turned' : ''}: another phone?` : '',
+        Math.abs(h - device.height) > device.height * 0.01 ? `the screenshot is ${Math.round(h)} tall, the board's phone ${device.height}${turned ? ' turned' : ''}: another phone?` : '',
+        !density && p.system === System.ios && Math.abs(scale - Math.round(scale)) > 0.02 ? `${app.width} px wide is not ${device.width} at 2× or 3×: another phone? (Foundations.device.density says)` : '',
         profile(png) ? `colour profile ${profile(png)}: convert it to sRGB` : '',
       ].filter(Boolean);
       if (rowsOff) notes.unshift(`differs most at y ${rowsOff}`);

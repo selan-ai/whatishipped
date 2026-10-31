@@ -23,6 +23,11 @@ export const systems = closed(['ios', 'android']);
 export type System = (typeof systems.values)[number];
 export const System = systems.names;
 
+/* Which way the device stands: Foundations.device wider than tall is landscape (an iPad game, a tablet app). */
+export const orientations = closed(['portrait', 'landscape']);
+export type Orientation = (typeof orientations.values)[number];
+export const Orientation = orientations.names;
+
 /* What a story or a step stands on in the canvas. */
 export const grounds = closed(['screen', 'dark', 'light', 'checker']);
 export type Ground = (typeof grounds.values)[number];

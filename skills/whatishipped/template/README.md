@@ -41,7 +41,7 @@ node <this folder>/server/capture.ts --out <this folder>/android/refs --android 
 | Path | Holds |
 |---|---|
 | `brandbook.json` | The app's name; each platform's id, label, repo (on this machine) and `web` (its code at the commit drawn); `same`, screens that are one screen under two ids |
-| `<platform>/tokens.css`, `foundations.js` | Tokens, and colours by meaning, type, shape, the device, the scenario every screen is drawn in, the design systems |
+| `<platform>/tokens.css`, `foundations.js` | Tokens, and colours by meaning, type, shape, the device (wider than tall for a landscape app), the scenario every screen is drawn in, the design systems |
 | `<platform>/icons.js` | The app's icons |
 | `<platform>/components.js`, `components.css` | The components most screens share, each with its stories |
 | `<platform>/areas.js` | The area files, in order; each `area-<name>.js` and `.css` draws a few screens and the components only they use |

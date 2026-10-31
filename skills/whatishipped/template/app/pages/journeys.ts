@@ -5,7 +5,7 @@
  */
 import type { Model } from '../model.ts';
 import type { Journey } from '../types.ts';
-import { esc, how, phoneAt, plural, url } from '../ui.ts';
+import { esc, how, mini, phoneAt, plural, url } from '../ui.ts';
 import type { Page } from './page.ts';
 
 const chain = (m: Model, j: Journey) => j.steps.map((st) => esc(m.byId.get(st.screen)?.name ?? st.screen)).filter((x, i, all) => x !== all[i - 1]).join(' → ');
@@ -16,7 +16,7 @@ export function journeysPage(m: Model): Page {
       <div class="b-journey__thumbs">${j.steps.slice(0, 5).map((st) => {
         const s = m.byId.get(st.screen);
         const at = s ? Math.max(0, s.states.findIndex((x) => x.name === st.state)) : 0;
-        return s ? phoneAt(() => s.states[at].render(), s.name, 0.14) : '';
+        return s ? phoneAt(() => s.states[at].render(), s.name, mini(m, 0.14)) : '';
       }).join('')}</div>
       <div class="b-card__title">${esc(j.name)}</div><div class="b-card__meta">${esc(j.feature)} · ${plural(j.steps.length, 'step', 'steps')} · ${esc(j.who)}</div>
       <div class="b-card__list">${chain(m, j)}</div></a>`).join('');
@@ -31,6 +31,7 @@ export function journeyPage(m: Model, id: string): Page {
   const j = m.journeys.find((x) => x.id === id);
   if (!j) return { title: 'No such journey', kicker: id, crumbs: [['Journeys', url.journeys(p)]], actions: '', body: '' };
   const others = m.index.platforms.filter((x) => x.id !== p && x.journeys.some((o) => o.id === j.id));
+  const zoom = mini(m, 0.5);
   const steps = j.steps.map((st, i) => {
     const s = m.byId.get(st.screen);
     const at = s ? s.states.findIndex((x) => x.name === st.state) : -1;
@@ -43,12 +44,12 @@ export function journeyPage(m: Model, id: string): Page {
         <div class="b-move__what">${esc(st.action)}</div>
         ${next.screen === st.screen ? '<span class="b-muted">same screen</span>' : edge ? how(edge.how) : back ? '<span class="b-muted">closes, back to where it came from</span>' : '<span class="b-chip b-chip--warn" title="No Screen.opens entry for this move">not in the code\'s map</span>'}
       </div>`;
-    const phone = s && at >= 0 ? phoneAt(() => s.states[at].render(), `${s.name} · ${st.state}`, 0.5) : `<div class="b-missing">${esc(st.screen)} · ${esc(st.state)}<br>not on this board</div>`;
+    const phone = s && at >= 0 ? phoneAt(() => s.states[at].render(), `${s.name} · ${st.state}`, zoom) : `<div class="b-missing">${esc(st.screen)} · ${esc(st.state)}<br>not on this board</div>`;
     return `<div class="b-step"><div class="b-step__head"><span class="b-step__n">${i + 1}</span><div>${s ? `<a href="${url.state(p, s.id, at)}">${esc(s.name)}</a>` : esc(st.screen)}<div class="b-muted">${esc(st.state)}</div></div></div>${phone}</div>${move}`;
   }).join('');
   return {
     title: j.name, kicker: j.goal, crumbs: [['Journeys', url.journeys(p)]],
     actions: others.map((x) => `<a class="b-btn" href="${url.journey(x.id, j.id)}">Same journey on ${esc(x.label)} →</a>`).join(''),
-    body: `<div class="b-meta"><span>${esc(j.who)}</span><span>${esc(j.feature)}</span><span>${plural(j.steps.length, 'step', 'steps')}</span></div><div class="b-track">${steps}</div>`,
+    body: `<div class="b-meta"><span>${esc(j.who)}</span><span>${esc(j.feature)}</span><span>${plural(j.steps.length, 'step', 'steps')}</span></div><div class="b-track" style="--step:${zoom}">${steps}</div>`,
   };
 }

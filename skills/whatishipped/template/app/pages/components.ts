@@ -6,7 +6,7 @@ import type { Entry, Model } from '../model.ts';
 import { cover, slug } from '../model.ts';
 import { Ground, grounds } from '../types.ts';
 import type { Demo } from '../types.ts';
-import { componentLink, esc, lazy, phoneAt, plural, sources, url } from '../ui.ts';
+import { componentLink, esc, lazy, mini, phoneAt, plural, sources, url } from '../ui.ts';
 import type { Page } from './page.ts';
 
 const demo = (e: Entry, d: Demo) => lazy(() => d.render(), `${e.c.name} · ${d.label}`, `b-demo__in${d.wide ? ' b-demo__in--wide' : ''}${d.bleed ? ' b-demo__in--bleed' : ''}`, '');
@@ -38,6 +38,8 @@ export function groupPage(m: Model, group: string): Page {
 export function componentPage(m: Model, e: Entry): Page {
   const p = m.here.id;
   const used = e.ix.usedIn.map((u) => ({ u, s: m.byId.get(u.screen) })).filter((x) => x.s);
+  /* Each card is the screen's thumbnail and, beside it, its name and states: as wide as the thumbnail and room for words. */
+  const zoom = mini(m, 0.22);
   const swatches = e.ix.tokens.map((css) => {
     const t = m.here.tokens.find((x) => x.css === css);
     return t ? `<a class="b-token" href="${url.token(p, css)}"><span class="b-token__chip" style="background:var(${css})"></span>${esc(t.name)}</a>` : '';
@@ -52,8 +54,8 @@ export function componentPage(m: Model, e: Entry): Page {
           <a class="b-story__label" href="${url.story(p, e.group, e.slug, i)}">${esc(d.label)}<span>Open ↗</span></a></div>`).join('')}
       </div>
       <h2 class="b-h2">Used on ${plural(used.length, 'screen', 'screens')}</h2>
-      ${used.length ? `<div class="b-refs">${used.map(({ u, s }) => s ? `
-        <div class="b-ref">${phoneAt(() => s.states[cover(s, u.states)].render(), s.name, 0.22)}
+      ${used.length ? `<div class="b-refs" style="--ref-w:calc(var(--phone-w) * ${zoom})">${used.map(({ u, s }) => s ? `
+        <div class="b-ref">${phoneAt(() => s.states[cover(s, u.states)].render(), s.name, zoom)}
           <div><a class="b-ref__name" href="${url.screen(p, s.id)}">${esc(s.name)}</a><div class="b-muted">${esc(s.feature)}</div>
           <div class="b-ref__states">${u.states.map((i) => `<a href="${url.state(p, s.id, i)}">${esc(s.states[i].name)}</a>`).join('')}</div></div></div>` : '').join('')}</div>`
         : '<p class="b-muted">None</p>'}

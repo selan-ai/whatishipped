@@ -8,6 +8,7 @@ window.Foundations = {
   // top safe-area inset; measure it on a screenshot, e.g. 62 on an iPhone 17 Pro), the clock ('9:41', or '09:41'
   // on a 24-hour phone), whether the home indicator shows (home: false when the screenshots have none), and the
   // density, pixels per point (iPhones 2 or 3; Android its dpi / 160, e.g. 420 / 160 = 2.625; 0 when unknown).
+  // It stands the way the app does: a landscape-only app is wider than tall, e.g. an iPad (A16) at 1180 × 820.
   device: { name: 'iPhone 16', width: 393, height: 852, status: 54, clock: '9:41', home: true, density: 3 },
   // The one setup every screen is drawn in (account, plan, flags), so all areas agree. The board does not show it.
   scenario: 'One signed-in account; every feature on.',

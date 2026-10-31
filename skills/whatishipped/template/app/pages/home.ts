@@ -5,7 +5,7 @@
 import { cover } from '../model.ts';
 import type { Model } from '../model.ts';
 import type { Index } from '../types.ts';
-import { esc, matchChip, phoneAt, plural, url } from '../ui.ts';
+import { esc, matchChip, mini, phoneAt, plural, url } from '../ui.ts';
 import type { Page } from './page.ts';
 
 export function homePage(index: Index): Page {
@@ -44,7 +44,7 @@ export function overviewPage(m: Model): Page {
     .map(([n, l, href]) => `<a href="${href}"><b>${n}</b>${l}</a>`).join('');
   const features = m.features.map((f) => {
     const list = m.screens.filter((s) => s.feature === f);
-    return `<a class="b-card b-feature" href="${url.feature(p, f)}"><div class="b-feature__thumbs">${list.slice(0, 4).map((s) => phoneAt(() => s.states[cover(s, null)].render(), s.name, 0.2)).join('')}</div>
+    return `<a class="b-card b-feature" href="${url.feature(p, f)}"><div class="b-feature__thumbs">${list.slice(0, 4).map((s) => phoneAt(() => s.states[cover(s, null)].render(), s.name, mini(m, 0.2))).join('')}</div>
       <div class="b-card__title">${esc(f)}</div><div class="b-card__meta">${plural(list.length, 'screen', 'screens')} · ${plural(list.reduce((n, s) => n + s.states.length, 0), 'state', 'states')}</div></a>`;
   }).join('');
   const problems = m.here.problems;

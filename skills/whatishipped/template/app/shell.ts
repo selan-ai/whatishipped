@@ -42,6 +42,8 @@ if (platform) {
   m = model(index, platform, w);
   const root = document.documentElement;
   root.dataset.platform = m.F.platform;
+  /* Which way the device stands: the board's CSS lays thumbnails, cards and pairs out by it. */
+  root.dataset.orientation = m.orientation;
   root.style.setProperty('--phone-w', `${m.F.device.width}px`);
   root.style.setProperty('--phone-h', `${m.F.device.height}px`);
   root.style.setProperty('--status-h', `${m.F.device.status}px`);

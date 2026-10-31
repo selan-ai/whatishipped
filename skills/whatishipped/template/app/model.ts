@@ -3,9 +3,11 @@
  * ordered, beside the server's index of every platform (what uses what, sources, the other platforms' screens).
  * Pure functions: the server imports merge and componentKey too.
  */
+import { Orientation } from './types.ts';
 import type { Component, Foundations, Group, Index, IndexComponent, IndexPlatform, IndexScreen, Journey, Open, Screen } from './types.ts';
 
 export const componentKey = (group: string, name: string) => `${group}/${name}`;
+export const orientation = (device: Foundations['device']): Orientation => (device.width > device.height ? Orientation.landscape : Orientation.portrait);
 export const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 /* Groups declared in several files become one, in Foundations.groupOrder, their components in itemOrder. */
@@ -25,7 +27,7 @@ export function merge(groups: Group[], F: Foundations): Group[] {
 export type Edge = Open & { fromId: string };
 export type Entry = { key: string; group: string; c: Component; ix: IndexComponent; slug: string };
 export type Model = {
-  index: Index; here: IndexPlatform; F: Foundations;
+  index: Index; here: IndexPlatform; F: Foundations; orientation: Orientation;
   catalog: Group[]; entries: Entry[]; entry: Map<string, Entry>;
   screens: Screen[]; byId: Map<string, Screen>; screenIx: Map<string, IndexScreen>;
   features: string[]; edges: Edge[]; journeys: Journey[];
@@ -54,7 +56,7 @@ export function model(index: Index, platform: string, w: { Foundations: Foundati
   const edges = screens.flatMap((s) => (s.opens ?? []).map((o) => ({ ...o, fromId: s.id })));
   const states = screens.reduce((n, s) => n + s.states.length, 0);
   return {
-    index, here, F, catalog, entries, entry: new Map(entries.map((e) => [e.key, e])),
+    index, here, F, orientation: orientation(F.device), catalog, entries, entry: new Map(entries.map((e) => [e.key, e])),
     screens, byId: new Map(screens.map((s) => [s.id, s])), screenIx: new Map(here.screens.map((s) => [s.id, s])),
     features: [...new Set(screens.map((s) => s.feature))], edges, journeys: w.Journeys,
     counts: { screens: screens.length, states, components: entries.length, stories: entries.reduce((n, e) => n + e.c.demos.length, 0), edges: edges.length, journeys: w.Journeys.length },
