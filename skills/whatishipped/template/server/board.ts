@@ -210,8 +210,11 @@ function tokenReader(dirs: string[], colours: Map<string, unknown>) {
   };
 }
 
-/* "Features/X.swift:88; Y.kt" → the files it names, found in the repo by their path's tail. */
-const FILE = /([\w@+.\-/]*[\w@+-]+\.(?:swift|kt|kts|java|xml|m|mm|h|ts|tsx|js|dart|xcstrings|strings|css|scss|sass|less|html|vue|svelte|astro|mdx))(?::(\d+))?/g;
+/* "Features/X.swift:88; Y.kt" → the files it names, found in the repo by their path's tail. Nothing after the extension
+   forces backtracking, so a longer extension must come before the one it starts with (tsx before ts, html before h). */
+const FILE = /([\w@+.\-/]*[\w@+-]+\.(?:swift|kt|kts|java|xml|mdx|m|mm|html|h|tsx|ts|js|dart|xcstrings|strings|css|scss|sass|less|vue|svelte|astro))(?::(\d+))?/g;
+/* The files a source text names, with the line when it gives one. */
+export const sourceMentions = (text: string) => [...text.matchAll(FILE)].map((m) => ({ text: m[0], file: m[1], line: m[2] ? Number(m[2]) : null }));
 function sourceReader(dir: string, repo: string | null) {
   const cacheFile = join(dir, 'sources.json');
   const known: Record<string, string | null> = existsSync(cacheFile) ? JSON.parse(readFileSync(cacheFile, 'utf8')) : {};
@@ -234,7 +237,7 @@ function sourceReader(dir: string, repo: string | null) {
   };
   const read = (text: string | undefined): Source[] => {
     const s = String(text ?? '');
-    const out = [...s.matchAll(FILE)].map((m) => ({ text: m[0], path: find(m[1]), line: m[2] ? Number(m[2]) : null }));
+    const out = sourceMentions(s).map((x) => ({ text: x.text, path: find(x.file), line: x.line }));
     return out.length ? out : s ? [{ text: s, path: null, line: null }] : [];
   };
   read.save = () => { if (byName) writeFileSync(cacheFile, `${JSON.stringify(known, null, 1)}\n`); };
