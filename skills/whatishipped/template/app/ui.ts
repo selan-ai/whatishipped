@@ -131,3 +131,13 @@ export const mini = (m: Model, zoom: number) => (m.orientation === Orientation.l
 /* A phone drawn at a fraction of its size, sized before it draws so the page does not jump. */
 export const phoneAt = (render: () => string, what: string, zoom: number) =>
   lazy(render, what, zoom === 1 ? 'b-full' : 'b-mini', `width:calc(var(--phone-w) * ${zoom});height:calc(var(--phone-h) * ${zoom});--mini:${zoom}`);
+
+/* The board's zoom until a person picks another (board.css and shell.ts start there too). */
+export const DEFAULT_ZOOM = 0.65;
+
+/* The zoom a drawing follows: `zoom` at the default, scaling with the board's zoom buttons from there. */
+export const followingZoom = (zoom: number) => `calc(var(--zoom) * ${zoom} / ${DEFAULT_ZOOM})`;
+
+/* A phone drawn at `scale` (a CSS number), so a drawing that follows the zoom buttons keeps its box in step. */
+export const phoneScaled = (render: () => string, what: string, scale: string) =>
+  lazy(render, what, 'b-mini', `--mini:${scale};width:calc(var(--phone-w) * var(--mini));height:calc(var(--phone-h) * var(--mini))`);
