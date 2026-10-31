@@ -51,7 +51,7 @@ Its screenshots are stored as lossless WebP like every other image. Convert PNGs
 node server/webp.ts <in.png>... --out <platform>/refs
 ```
 
-It keeps each file's name, creates the folder, and reports any file it cannot convert (a side over WebP's 16383 px limit is refused). In the skill's repository, the regression
+It keeps each file's name, creates the folder, and reports any file it cannot convert (a side over WebP's 16383 px limit is refused); it never overwrites, so two files of one name, or a different file already in the folder, fail. In the skill's repository, the regression
 tests run with `node --test tests/*.test.ts`.
 
 ## What is where

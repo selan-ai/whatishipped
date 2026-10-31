@@ -11,8 +11,9 @@
  *
  *   node server/webp.ts <in.png>... --out <dir>
  * stores PNG files from elsewhere (a web app's Playwright screenshots, ones a person sends) in <dir>, created, each as
- * a lossless WebP under its own name. One it cannot read, that is not a PNG, or with a side over WebP's 16383 px is
- * named and the rest carry on; it exits 1 when any failed.
+ * a lossless WebP under its own name. One it cannot read, that is not a PNG, with a side over WebP's 16383 px, that
+ * shares its name with another, or whose WebP would replace a different file is named and the rest carry on; it exits
+ * 1 when any failed.
  */
 import { spawn, spawnSync } from 'node:child_process';
 import { mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -196,11 +197,24 @@ export type Conversion = { input: string; output: string | null; failure: string
 /* A PNG's width and height from its header, or null when the bytes are not a PNG. */
 const pngSize = (bytes: Buffer) => (bytes.length >= 24 && bytes.readUInt32BE(0) === 0x89504e47 ? { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) } : null);
 
-/* Each PNG as <outDir>/<its name>.webp; one that cannot be converted is reported and the rest carry on. */
+/*
+ * Each PNG as <outDir>/<its name>.webp; one that cannot be converted is reported and the rest carry on. Nothing is
+ * overwritten: files that would make one output (names that differ only in case too, as macOS sees them) all fail,
+ * and so does an output where a different file already is. The same PNG converted again leaves the same file.
+ */
 export async function convertFiles(inputs: string[], outDir: string): Promise<Conversion[]> {
+  const outputOf = (input: string) => join(outDir, `${basename(input, extname(input))}.webp`);
+  const claims = new Map<string, Set<string>>();
+  for (const input of inputs) {
+    const key = outputOf(input).toLowerCase();
+    claims.set(key, (claims.get(key) ?? new Set<string>()).add(resolve(input)));
+  }
   const results: Conversion[] = [];
   for (const input of inputs) {
     const fail = (failure: string) => results.push({ input, output: null, failure });
+    const output = outputOf(input);
+    const rivals = [...(claims.get(output.toLowerCase()) ?? [])].filter((other) => other !== resolve(input));
+    if (rivals.length) { fail(`${input}: ${rivals.join(', ')} would also become ${output}; rename one, or convert them into different folders`); continue; }
     let png: Buffer;
     try { png = readFileSync(input); } catch (e) { fail(`${input}: cannot be read (${(e as Error).message})`); continue; }
     const size = pngSize(png);
@@ -208,9 +222,9 @@ export async function convertFiles(inputs: string[], outDir: string): Promise<Co
     if (size.width > MAX_SIDE || size.height > MAX_SIDE) { fail(`${input}: ${size.width} × ${size.height} is over WebP's limit of ${MAX_SIDE} pixels a side; split or scale the screenshot`); continue; }
     let webp: Buffer;
     try { webp = await toWebp(png); } catch (e) { fail(`${input}: ${(e as Error).message}`); continue; }
-    const output = join(outDir, `${basename(input, extname(input))}.webp`);
-    mkdirSync(outDir, { recursive: true });
-    writeFileSync(output, webp);
+    const there = statSync(output, { throwIfNoEntry: false });
+    if (there && !(there.isFile() && readFileSync(output).equals(webp))) { fail(`${input}: ${output} exists and is not this image; move it, or pick another --out`); continue; }
+    if (!there) { mkdirSync(outDir, { recursive: true }); writeFileSync(output, webp); }
     results.push({ input, output, failure: null });
   }
   return results;

@@ -88,7 +88,60 @@ test('a missing file and a non-PNG fail cleanly while the others still convert',
   assert.ok(existsSync(join(out, 'good.webp')));
 });
 
+test('two inputs that would make one file both fail, naming each other, and neither is written', async () => {
+  for (const dir of ['day', 'night']) mkdirSync(join(work, dir), { recursive: true });
+  const day = join(work, 'day', 'Home.png');
+  const night = join(work, 'night', 'home.png');
+  const other = join(work, 'day', 'other.png');
+  writeFileSync(day, png(2, 2));
+  writeFileSync(night, encodePng({ width: 2, height: 2, rgba: new Uint8Array(PIXELS) }));
+  writeFileSync(other, png(2, 2));
+  const out = join(work, 'same-name');
+  const results = await convertFiles([day, night, other], out);
+  assert.deepEqual(results.map((r) => r.failure === null), [false, false, true]);
+  assert.match(results[0].failure ?? '', /night\/home\.png/);
+  assert.match(results[1].failure ?? '', /day\/Home\.png/);
+  assert.equal(existsSync(join(out, 'Home.webp')) || existsSync(join(out, 'home.webp')), false);
+  assert.ok(existsSync(join(out, 'other.webp')));
+});
+
+test('an output that would overwrite a different file is refused and the file is left as it was', async () => {
+  const input = join(work, 'kept.png');
+  writeFileSync(input, encodePng({ width: 2, height: 2, rgba: new Uint8Array(PIXELS) }));
+  const out = join(work, 'existing');
+  mkdirSync(out, { recursive: true });
+  writeFileSync(join(out, 'kept.webp'), pixelWebp.subarray(0, 40));
+  const [result] = await convertFiles([input], out);
+  assert.match(result.failure ?? '', /kept\.webp.*exists/);
+  assert.deepEqual(readFileSync(join(out, 'kept.webp')), pixelWebp.subarray(0, 40));
+});
+
+test('converting the same PNG into the same folder again succeeds and leaves the same file', async () => {
+  const input = join(work, 'again.png');
+  writeFileSync(input, encodePng({ width: 2, height: 2, rgba: new Uint8Array(PIXELS) }));
+  const out = join(work, 'again-out');
+  const [first] = await convertFiles([input], out);
+  assert.equal(first.failure, null);
+  const bytes = readFileSync(join(out, 'again.webp'));
+  /* Named twice in one run, too: one file makes one output. */
+  const again = await convertFiles([input, input], out);
+  assert.deepEqual(again.map((r) => r.failure), [null, null]);
+  assert.deepEqual(readFileSync(join(out, 'again.webp')), bytes);
+});
+
 const cli = join(template, 'server', 'webp.ts');
+
+test('the command exits 1 rather than overwrite a different file, and says which', () => {
+  const input = join(work, 'cli-clash.png');
+  writeFileSync(input, png(2, 2));
+  const out = join(work, 'cli-clash-out');
+  mkdirSync(out, { recursive: true });
+  writeFileSync(join(out, 'cli-clash.webp'), 'someone else\'s screenshot');
+  const run = spawnSync(process.execPath, [cli, input, '--out', out], { encoding: 'utf8' });
+  assert.equal(run.status, 1);
+  assert.match(run.stderr, /cli-clash\.webp.*exists/);
+  assert.equal(readFileSync(join(out, 'cli-clash.webp'), 'utf8'), 'someone else\'s screenshot');
+});
 
 test('the command converts, and exits 1 naming each failure', () => {
   const good = join(work, 'cli-good.png');
