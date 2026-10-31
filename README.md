@@ -6,7 +6,7 @@ A [Claude Code](https://claude.com/claude-code) skill. Point it at an iOS or And
 every state, the components, colours and type, and the journeys through the app, as one brandbook you can run, host
 and click through.
 
-![The front page of a brandbook: iOS and Android side by side](docs/front.png)
+![The front page of a brandbook: iOS and Android side by side](docs/front.webp)
 
 Design files drift. Figma shows what someone drew last spring; the app shows what shipped. whatishipped starts from
 the other end, the code: it reads SwiftUI, UIKit, Jetpack Compose or XML views and draws each one in HTML. Then it puts
@@ -42,29 +42,30 @@ from first. It asks before it runs anything.
 
 ## What you get
 
-Every screen, each state beside the app's own screenshot of it, with how much of it matches:
+Every screen in every state, with how much of it matches the app's own screenshot. Each state shows its drawing, with
+a switch to the screenshot and to what differs, in red; a state that differs shows the app beside the drawing:
 
-![A screen page: the app and the drawing side by side, with the match](docs/screen.png)
+![A screen page: the app and the drawing side by side, with the match](docs/screen.webp)
 
 Journeys, step by step, through real screens and states:
 
-![A journey: three steps, each a screen in one state](docs/journey.png)
+![A journey: three steps, each a screen in one state](docs/journey.webp)
 
 Components laid out as Storybook does, each story drawn, with where it is defined and the screens that use it:
 
-![A component page with its stories](docs/component.png)
+![A component page with its stories](docs/component.webp)
 
 Colours grouped by what the code says they are for, type, shape and icons:
 
-![The colour page](docs/colour.png)
+![The colour page](docs/colour.webp)
 
 What opens what, read from the code:
 
-![A feature's navigation map](docs/navigation.png)
+![A feature's navigation map](docs/navigation.webp)
 
 Android gets the same, in its own folder, with the same journeys and features so the two line up:
 
-![An Android screen page](docs/android.png)
+![An Android screen page](docs/android.webp)
 
 The demo is [Selan Reactor](https://selan.ai), our own app, drawn with its test data: 22 screens, 198 states and 100
 components on iOS and Android, 166 states measured against the app's UI test screenshots at 97% on average.
@@ -106,6 +107,7 @@ anything you host.
 
 - Claude Code. A whole app is a big job: the demo took eight agents, drawing in parallel, about an hour.
 - Node 22.18 or later, and Google Chrome for the checks.
+- libwebp's `cwebp` and `dwebp` (`brew install webp`): every screenshot and image is stored as lossless WebP.
 - Xcode's simulator or `adb` only to capture screenshots.
 
 No npm packages, anywhere.

@@ -1,9 +1,9 @@
 /*
- * PNG in and out without dependencies: enough for screenshots (8-bit RGB or RGBA, not interlaced), which is what
- * simctl, adb and Chrome write. Used to tell captured frames apart (capture.ts) and to measure how closely a drawing
- * matches a screenshot of the app (check.ts --compare).
+ * PNG read without dependencies: enough for the screenshots simctl, adb and Chrome hand over (8-bit RGB or RGBA, not
+ * interlaced), which are stored as WebP (webp.ts) once read. Used to tell captured frames apart (capture.ts), and for
+ * the pixels check.ts --compare measures (match.ts).
  */
-import { crc32, deflateSync, inflateSync } from 'node:zlib';
+import { inflateSync } from 'node:zlib';
 
 export type Image = { width: number; height: number; rgba: Uint8Array };
 
@@ -63,25 +63,6 @@ export function profile(png: Buffer): string | null {
     at += 12 + length;
   }
   return null;
-}
-
-export function encode(img: Image): Buffer {
-  const stride = img.width * 4;
-  const raw = Buffer.alloc((stride + 1) * img.height);
-  for (let y = 0; y < img.height; y += 1) raw.set(img.rgba.subarray(y * stride, (y + 1) * stride), y * (stride + 1) + 1);
-  const chunk = (kind: string, body: Buffer) => {
-    const head = Buffer.alloc(8);
-    head.writeUInt32BE(body.length, 0);
-    head.write(kind, 4, 'ascii');
-    const crc = Buffer.alloc(4);
-    crc.writeUInt32BE(crc32(Buffer.concat([head.subarray(4), body])), 0);
-    return Buffer.concat([head, body, crc]);
-  };
-  const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(img.width, 0);
-  ihdr.writeUInt32BE(img.height, 4);
-  ihdr.set([8, 6, 0, 0, 0], 8);
-  return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
 }
 
 /* The image at another size, each pixel the mean of the ones it covers. */

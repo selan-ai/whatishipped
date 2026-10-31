@@ -29,7 +29,8 @@ state the app lays out differently turned is `Frame.phone({ turned: true, ... })
   `c-<AREA>-<name>`. Start each block with a short comment naming the file it was read from.
 - Take colours, sizes and type only from tokens.css. A literal the code itself hard-codes stays a literal, with a
   comment saying so. An image or font the area needs is copied into `<OUT>/<PLATFORM>/assets/` and named
-  `assets/...` (relative to the platform folder).
+  `assets/...` (relative to the platform folder); a raster image as lossless WebP (`cwebp -lossless -exact`), and
+  any picture you keep (a crop, a contact sheet) too.
 - Call every component through `C.Name(...)`, your own too, so the brandbook can see where each is used.
 - Inside the phone, boxes are border-box (padding counts inside a width or height): SwiftUI's `.frame(minHeight: 22)`
   then `.padding(14)` is `min-height: 50px; padding: 14px`.
@@ -49,7 +50,7 @@ Screenshots of the real app, in <OUT>/<PLATFORM>/refs/, for your screens: <SCREE
 Open each before drawing its screen and match it: layout, sizes, spacing, type, colours, icons, what is on the screen
 and in what order. Titles and covers may be the test account's; where one shows another variant (a flag, an
 account), draw the scenario's and say so in the note. Pair each screenshot with the state it shows, in the state:
-`{ name, note, app: 'refs/0012.png', render }`, the frame closest to the scenario where several show one state.
+`{ name, note, app: 'refs/0012.webp', render }`, the frame closest to the scenario where several show one state.
 
 ## Shared pieces and the scenario
 - Draw every screen in `Foundations.scenario`: the same account, flags and tabs as every other area.
@@ -85,7 +86,7 @@ account), draw the scenario's and say so in the note. Pair each screenshot with 
 ## Verify by looking and by measuring
 The brandbook is served at <URL> (if not, run `node <OUT>/server.ts <PORT> &`). Check every screen and group you drew:
   node <OUT>/server/check.ts <URL>/<PLATFORM>/screens/<id> <URL>/<PLATFORM>/components/<group-slug> --shot /tmp/<AREA>
-It prints each page's errors; read the PNGs and fix until your work matches the quality of what is already there.
+It prints each page's errors and layout problems; read the pictures and fix until your work matches the quality of what is already there.
 Then measure every state you paired with a screenshot:
   node <OUT>/server/check.ts --compare <URL> --screens <your screen ids> --shot /tmp/<AREA>-match
 It prints how much of each screen matches the app, worst first, and saves the app, your drawing and the differences in

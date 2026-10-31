@@ -76,6 +76,13 @@ function worst(off: Uint8Array, W: number, H: number, band: number) {
   return runs.sort((a, b) => b.sum - a.sum).slice(0, 2).sort((a, b) => a.from - b.from).map(({ from, to }) => ({ from, to }));
 }
 
+/* What differs, red on transparent at the screenshot's size: the board lays it over the drawing, greyed. */
+export function mask(result: Result, width: number, height: number): Image {
+  const rgba = new Uint8Array(width * height * 4);
+  for (let i = 0; i < width * height; i += 1) if (result.off[i]) rgba.set([255, 64, 64, 255], i * 4);
+  return { width, height, rgba };
+}
+
 /* The app, the drawing, and the drawing greyed with what differs in red, side by side at 1:1 points. */
 export function picture(app: Image, drawing: Image, result: Result, w: number, h: number): Image {
   const gap = 16;

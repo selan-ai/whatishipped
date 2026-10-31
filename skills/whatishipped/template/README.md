@@ -10,12 +10,17 @@ npm start                 # http://localhost:4321; Node 22.18 or later, nothing 
 PORT=8080 npm start       # another port
 ```
 
+Every image is stored as lossless WebP. Building, checking and capturing need libwebp's `cwebp` and `dwebp`
+(`brew install webp`, `apt install webp`).
+
 To host it, run the same on any machine with Node, build the image (`docker build -t brandbook . && docker run -p
 8080:8080 brandbook`), or build static files for any host that serves a folder:
 
 ```sh
 npm run build             # dist/; the host answers any address without a file with dist/index.html
 ```
+
+The build fails when an image the board names is not in `dist/`.
 
 On Cloudflare that is a Worker with only assets, `"assets": { "directory": "dist", "not_found_handling":
 "single-page-application" }`, and Cloudflare Access on its hostname to keep it to your team. The repos are not needed
@@ -26,7 +31,7 @@ a person's own account.
 ## Check it
 
 ```sh
-npm run check -- --all http://localhost:4321                         # every page draws without an error
+npm run check -- --all http://localhost:4321                         # every page draws, and lays out at 1024–2560 wide
 npm run check -- --compare http://localhost:4321 --shot /tmp/match   # each drawn state against the app's screenshot
 ```
 
@@ -48,16 +53,18 @@ node <this folder>/server/capture.ts --out <this folder>/android/refs --android 
 | `<platform>/journeys.js` | Journeys: steps through screens and states |
 | `<platform>/refs/`, `refs.json` | Screenshots of the real app, and the screens they show; a state names its own with `app` |
 | `<platform>/match.json` | How much of each paired state matches its screenshot, written by `check.ts --compare` |
+| `<platform>/diff/` | What differs between each screenshot and its drawing, red on transparent, written by `check.ts --compare`: a screen page's Diff |
 | `<platform>/RECON.md` | What the code holds: screens, what opens what, journeys, sources, gaps |
 | `<platform>/sources.json`, `assets/` | Source paths found in the repo; fonts and images the drawings use |
 | `app/` | The brandbook in the browser: `shell.ts` routes and draws, `pages/*.ts` one file per kind of page, `frame.js` the phone |
-| `server.ts`, `server/` | The server; `board.ts` reads the platforms into `/api/index.json`; `build.ts` writes the static files; `check.ts`, `capture.ts`, `png.ts` are tools |
+| `server.ts`, `server/` | The server; `board.ts` reads the platforms into `/api/index.json`; `build.ts` writes the static files; `check.ts`, `capture.ts`, `webp.ts`, `png.ts` are tools |
 
 ## Extend it
 
 - **Screens, a flow, a feature:** a new `area-<name>.js` (and `.css`), its stem added to `<platform>/areas.js`.
 - **Screenshots:** files in `<platform>/refs/`, each mapped to its screen in `refs.json`; the state a screenshot shows
-  names it (`{ name, app: 'refs/0012.png', render }`).
+  names it (`{ name, app: 'refs/0012.webp', render }`). Every image is lossless WebP; `node server/webp.ts` converts
+  PNG and JPEG in the platform folders and rewrites the paths that name them.
 - **A platform:** a copy of the skill's `template/platform` starter, and an entry in `brandbook.json`.
 - **A kind of page:** a function returning a `Page` in `app/pages/`, a section in `shell.ts` (`sections`, `page()`
   and `tree()`), and its addresses in `ui.ts` (`url`). The data it needs comes from the platform files through

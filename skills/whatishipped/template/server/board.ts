@@ -139,8 +139,8 @@ function readPlatform(root: string, p: Config['platforms'][number]): IndexPlatfo
 }
 
 /*
- * Screenshots of the real app per screen, from refs.json ({ "<screen id>": [{ "file": "refs/0012.png", "state": "<state
- * name>" | null, "note": "…" }] }) and from the states themselves ({ name, app: "refs/0012.png", render }), which pair
+ * Screenshots of the real app per screen, from refs.json ({ "<screen id>": [{ "file": "refs/0012.webp", "state": "<state
+ * name>" | null, "note": "…" }] }) and from the states themselves ({ name, app: "refs/0012.webp", render }), which pair
  * a screenshot with the state it shows. match.json, which check.ts --compare writes: { "<screen id>": { "<file>": the
  * percent of the screen that matches } }.
  */
@@ -168,12 +168,18 @@ function refReader(dir: string, screens: Screen[], problems: string[], match: Re
       if (!r.file || !existsSync(join(dir, r.file))) { problems.push(`${s.name}: no screenshot file "${r.file}"`); return []; }
       if (r.state !== null && !s.states.some((st) => st.name === r.state)) problems.push(`refs.json: ${s.name} has no state "${r.state}"`);
       const score = match[s.id]?.[r.file];
-      return [{ ...r, match: typeof score === 'number' && r.state !== null ? score : null }];
+      const diff = diffOf(r.file);
+      return [{ ...r, match: typeof score === 'number' && r.state !== null ? score : null, diff: existsSync(join(dir, diff)) ? diff : null }];
     });
     if (refs.length) out.set(s.id, refs);
   }
+  const raster = [...out.values()].flat().filter((r) => /\.(png|jpe?g)$/i.test(r.file)).length;
+  if (raster) problems.push(`${raster} screenshots of the app are PNG or JPEG: node server/webp.ts stores them as lossless WebP`);
   return out;
 }
+
+/* Where check.ts --compare keeps what differs between a screenshot and its drawing: diff/<the screenshot's path>. */
+export const diffOf = (file: string) => `diff/${file.replace(/^refs\//, '').replace(/\.[a-z0-9]+$/i, '')}.webp`;
 
 const readJson = (path: string): unknown => { try { return existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : {}; } catch { return {}; } };
 

@@ -1,6 +1,7 @@
 /* Screens: by feature, one feature, one screen in every state with what opens it, what it opens and what it is made of. */
 import { cover, twin } from '../model.ts';
 import type { Model } from '../model.ts';
+import { MATCHED, View } from '../types.ts';
 import { componentLink, esc, how, matchChip, mini, phoneAt, plural, screenLink, sources, url } from '../ui.ts';
 import { graph } from './navigation.ts';
 import type { Page } from './page.ts';
@@ -62,12 +63,23 @@ export function screenPage(m: Model, id: string): Page {
       <div class="b-phone__frame">${app(r.file)}</div>
       <figcaption><span class="b-phone__idx">App</span><span class="b-phone__name">In the app</span></figcaption>
     </figure>`).join('');
+  /*
+   * A state shows one frame, the drawing, with a switch to the app's screenshot and to what differs; the app beside the
+   * drawing where there is something to look at (under 95%, or not measured yet), or for every state with Compare.
+   */
+  const comparing = localStorage.getItem('brandbook-compare') === '1';
+  const label = { [View.app]: 'App', [View.drawing]: 'Drawing', [View.diff]: 'Diff', [View.both]: 'Both' };
   const states = s.states.map((st, i) => {
     const shots = refs.filter((r) => r.state === st.name);
+    const look = shots.some((r) => r.match === null || r.match < MATCHED) ? View.both : View.drawing;
+    const masks = shots.flatMap((r) => (r.diff ? [`<img class="b-mask" src="${esc(r.diff)}" alt="" loading="lazy">`] : [])).join('');
+    const choices = shots.length ? [View.app, View.drawing, ...(masks ? [View.diff] : [])] : [];
+    const tools = shots.length ? `<span class="b-phone__tools">${shots.map((r) => matchChip(r.match)).join(' ')}<span class="b-seg b-view" role="group" aria-label="Show">${choices.map((v) => `<button type="button" data-show="${v}">${label[v]}</button>`).join('')}</span><span class="b-phone__both b-muted">the app, then the drawing</span></span>` : '';
+    const view = shots.length ? (comparing ? View.both : look) : View.drawing;
     return `
-    <figure class="b-phone${shots.length ? ' b-phone--pair' : ''}" id="state-${i + 1}" style="--shots:${shots.length}">
-      <div class="b-phone__frame">${shots.map((r) => app(r.file)).join('')}${phoneAt(() => st.render(), `${s.name} · ${st.name}`, 1)}</div>
-      <figcaption><a class="b-phone__idx" href="#state-${i + 1}">${i + 1}</a><span class="b-phone__name">${esc(st.name)}${shots.length ? ` <span class="b-muted">· the app, then the drawing</span> ${shots.map((r) => matchChip(r.match)).join(' ')}` : ''}</span></figcaption>
+    <figure class="b-phone" id="state-${i + 1}" data-view="${view}"${shots.length ? ` data-look="${look}"` : ''} style="--shots:${shots.length}">
+      <div class="b-phone__frame">${shots.map((r) => app(r.file)).join('')}<div class="b-drawn">${phoneAt(() => st.render(), `${s.name} · ${st.name}`, 1)}${masks}</div></div>
+      <figcaption><a class="b-phone__idx" href="#state-${i + 1}">${i + 1}</a><span class="b-phone__name">${esc(st.name)}</span>${tools}</figcaption>
     </figure>`;
   }).join('');
   const comps = ix?.components ?? [];
@@ -75,7 +87,7 @@ export function screenPage(m: Model, id: string): Page {
     title: s.name,
     kicker: '',
     crumbs: [['Screens', url.screens(p)], [s.feature, url.feature(p, s.feature)]],
-    actions: `${prev ? `<a class="b-btn" href="${url.screen(p, prev.id)}" data-key="ArrowLeft">← ${esc(prev.name)}</a>` : ''}${next ? `<a class="b-btn" href="${url.screen(p, next.id)}" data-key="ArrowRight">${esc(next.name)} →</a>` : ''}`,
+    actions: `${refs.some((r) => r.state !== null) ? `<button class="b-btn" type="button" data-compare aria-pressed="${comparing}" title="Every state with a screenshot of the app beside its drawing">Compare</button>` : ''}${prev ? `<a class="b-btn" href="${url.screen(p, prev.id)}" data-key="ArrowLeft">← ${esc(prev.name)}</a>` : ''}${next ? `<a class="b-btn" href="${url.screen(p, next.id)}" data-key="ArrowRight">${esc(next.name)} →</a>` : ''}`,
     body: `
       <div class="b-meta">
         <span>${plural(s.states.length, 'state', 'states')}</span>

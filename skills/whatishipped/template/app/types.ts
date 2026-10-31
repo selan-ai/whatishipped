@@ -28,13 +28,19 @@ export const orientations = closed(['portrait', 'landscape']);
 export type Orientation = (typeof orientations.values)[number];
 export const Orientation = orientations.names;
 
+/* What a state on a screen page shows: the drawing, the app's screenshot, the drawing greyed with what differs from
+   the screenshot in red, or the app beside the drawing. */
+export const views = closed(['drawing', 'app', 'diff', 'both']);
+export type View = (typeof views.values)[number];
+export const View = views.names;
+
 /* What a story or a step stands on in the canvas. */
 export const grounds = closed(['screen', 'dark', 'light', 'checker']);
 export type Ground = (typeof grounds.values)[number];
 export const Ground = grounds.names;
 
 export type Open = { to: string; how: How; from: string; source: string };
-/* app: a screenshot of the real app showing this state ("refs/0012.png"), or null. */
+/* app: a screenshot of the real app showing this state ("refs/0012.webp"), or null. */
 export type State = { name: string; note: string; app: string | null; render: () => string };
 export type Screen = { id: string; order: number; feature: string; name: string; source: string; desc: string; opens: Open[]; states: State[] };
 export type Demo = { label: string; render: () => string; wide: boolean; bleed: boolean };
@@ -61,8 +67,9 @@ export type Foundations = {
 /* A place in the app's code: the text the board wrote, and the file it names when the server found it in the repo. */
 export type Source = { text: string; path: string | null; line: number | null };
 
-/* A screenshot of the real app (<platform>/refs.json), and the drawn state it shows, if one does. */
-export type Ref = { file: string; state: string | null; note: string; match: number | null };
+/* A screenshot of the real app (<platform>/refs.json), the drawn state it shows, if one does, and what differs (diff:
+   red on transparent, written by check.ts --compare). */
+export type Ref = { file: string; state: string | null; note: string; match: number | null; diff: string | null };
 export type IndexScreen = {
   id: string; name: string; feature: string; desc: string; source: Source[]; states: string[]; opens: Open[];
   components: string[]; tokens: string[]; refs: Ref[];

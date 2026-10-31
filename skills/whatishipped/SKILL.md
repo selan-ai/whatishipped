@@ -20,7 +20,7 @@ that anyone can run or host. Each platform has its own pages:
 
 There are two sources: the code, and the running app. Code read alone gets layout, spacing and variants wrong in ways
 no check catches; a board drawn blind matched its app about 80%. So every screen the app can be made to show is drawn
-against a screenshot of it, and how closely it matches is measured. **`example/*.png` shows the shape: read all three
+against a screenshot of it, and how closely it matches is measured. **`example/*.webp` shows the shape: read all three
 images before building anything.** They are pages of one app's brandbook (Selan Reactor): read them for how the
 pages are laid out, and take nothing from them about the app they show, even when you are drawing that app. A table
 of tokens or a list of lint findings is not a brandbook, however accurate.
@@ -50,6 +50,8 @@ folders could be the brandbook they mean, ask which.
    and `same`, pairs of screens that are one screen under two ids; remove the starter's platforms and pairs you do
    not draw. `app/` and `server/` are the brandbook itself; `<OUT>/README.md` says what every file holds. The server
    runs on 4321; where that is taken, pick another (`PORT=4330 npm start`) and use it wherever this says 4321.
+   Every image is stored as lossless WebP, so libwebp's `cwebp` and `dwebp` must be installed (`brew install webp`,
+   `apt install webp`); the tools stop and say so when they are not.
 2. **Recon**, per platform, over what the request covers (a subagent per platform when that is more than a few
    screens). Write `<OUT>/<platform>/RECON.md`:
    - the UI tech, the token files (generated ones count), where the shared components live;
@@ -98,7 +100,8 @@ folders could be the brandbook they mean, ask which.
    - `icons.js`: the icons the app uses, as shipped where the repo has SVG or vector drawables.
    - `components.js` and `components.css`: the components most screens share, each with every state. To find them,
      count the features that use each type, by type name.
-   - Fonts and images are copied into `<platform>/assets/` and named relative to the platform folder.
+   - Fonts and images are copied into `<platform>/assets/` and named relative to the platform folder; raster images
+     as lossless WebP (`cwebp -lossless -exact <in> -o <out>.webp`). SVG stays SVG.
 6. **Areas.** Split the screens to draw, with the components only they use, into areas of 2–5 screens by feature
    (one, when a screen has more than about 15 states). Send each the brief in `area-brief.md`, all at once, with its
    screens' screenshots; without subagents, draw them one by one with the brief as the checklist. Each area's file
@@ -108,20 +111,26 @@ folders could be the brandbook they mean, ask which.
    same journey on every platform.
 8. **Match.** Start the server (`npm start`, in the background) and run `node server/check.ts --compare
    http://localhost:4321 --shot /tmp/match`. It draws each state that has a screenshot (its `app` field) alone at the
-   screenshot's size and prints how much of the screen's content matches, worst first, with the rows that differ
-   most. For each, it saves the app, the drawing and every point that differs in red, side by side, and `-zoom`, the
-   rows that differ most at the screenshot's own scale. Fix the worst first and run it again. A state is done when it
-   is at 95% or above and its red picture shows no shape (a line, an edge, an icon, a box) that the drawing could
-   still change, only speckle on text; or when what still differs comes from the screenshot rather than the code
-   (its account's titles, covers, dates and avatars, or another phone, which `--compare` warns of), which the
-   state's note then says. A drawing right to the point scores 97–100; one 2 points off, about 92; a wrong screen,
-   below 75. The screen pages and the overview show every score.
+   screenshot's size and prints how much of the screen's content matches, worst first, with the rows that differ most.
+   For each, it saves (as WebP) the app, the drawing and every point that differs in red, side by side, and `-zoom`,
+   the rows that differ most at the screenshot's own scale. Fix the worst first and run it again. A state is done when
+   it is at 95% or above and its red picture shows no shape (a line, an edge, an icon, a box) that the drawing could
+   still change, only speckle on text; or when what still differs comes from the screenshot rather than the code (its
+   account's titles, covers, dates and avatars, or another phone, which `--compare` warns of), which the state's note
+   then says. A drawing right to the point scores 97–100; one 2 points off, about 92; a wrong screen, below 75. The
+   overview shows every score. A screen page shows each state as its drawing, with its score and a switch to the app's
+   screenshot and to what differs (Diff, red over the greyed drawing, from `<platform>/diff/`); a state under 95%, or
+   not measured yet, shows the app beside the drawing, and Compare sets every state that way.
 9. **Check.** Run `node server/check.ts --all http://localhost:4321` (add `--deep` for every component's page,
-   `--shot <dir>` for screenshots, `CHROME=<path>` for another Chrome). Fix until every page draws without a
-   problem and no platform overview shows a "problems" box (a journey step, a feature or a screenshot that does not
-   resolve). Read screenshots of every screen without an app screenshot. Check the state counts against RECON, that
-   every arrow to a screen that is not drawn is one you meant to leave out, and that no component page says "used on
-   no screen" for a component a screen draws (call it through `C.Name`).
+   `--shot <dir>` for screenshots, `CHROME=<path>` for another Chrome). Besides errors, it lays every page out at
+   1024, 1280, 1440, 1920 and 2560 wide and fails on what a person would see broken: a box sticking out of its card
+   or container (tags running into the next card), cards on top of each other, text under 120px wide wrapping to
+   more than two lines (a title squeezed to a word a line), a page that scrolls sideways; each with the page, the
+   width and the element. Fix until every page draws without a problem at every width and no platform overview shows
+   a "problems" box (a journey step, a feature or a screenshot that does not resolve, a screenshot still PNG). Read
+   screenshots of every screen without an app screenshot. Check the state counts against RECON, that every arrow to a
+   screen that is not drawn is one you meant to leave out, and that no component page says "used on no screen" for a
+   component a screen draws (call it through `C.Name`).
 10. **Show.** Leave the server running, `open http://localhost:4321/`, and report: the counts, the journeys, how many
     states were measured against the app and their average match, the screens drawn from the code alone, and what is
     approximated.
@@ -139,8 +148,12 @@ take the template's, and restart the brandbook's own server (`<PORT>`: 4321, or 
 rsync -a --delete <this skill>/template/app/ <OUT>/app/
 rsync -a --delete <this skill>/template/server/ <OUT>/server/
 cp <this skill>/template/{server.ts,package.json,README.md,Dockerfile} <OUT>/
+(cd <OUT> && node server/webp.ts)    # PNG and JPEG in the platform folders to lossless WebP, and every path to them
 lsof -ti tcp:<PORT> | xargs kill; (cd <OUT> && PORT=<PORT> npm start &)    # a running server keeps the old code
 ```
+
+`server/webp.ts` prints any path it could not rewrite (one built in code from parts): fix those by hand. A brandbook's
+own tools outside `app/` and `server/` that read `.png` need the same change.
 
 Then run step 9 over the whole brandbook, and step 8: newer tools can score old states differently. Fix what the
 request covers; report the rest. The platform folders are never touched by this.
@@ -177,6 +190,9 @@ commit (read it with `git show <commit>:<path>`) or to move the whole brandbook 
   write every time relative to it.
 - **Say what you approximate** (SF Symbols, system sheets, the keyboard, animation), in RECON. Never drop anything
   silently.
+- **Store every image as lossless WebP**: screenshots of the app, QA and contact sheets, crops, everything the tools
+  write. `capture.ts` and `check.ts` write WebP; a PNG that arrives another way (simctl, adb, a person) is converted
+  at once (`cwebp -lossless -exact -metadata icc`, or `node server/webp.ts`) and the PNG deleted.
 - **Never change the app's tracked files.** Read the repos, build them and run their tests as they are. Setup may
   add ignored files (a secret, build output); remove what you added, and leave `git status` as you found it.
 - **The board is pictures and names, no prose.** Nobody reads paragraphs there, so the shell shows none: a `desc`,
@@ -198,6 +214,8 @@ commit (read it with `git show <commit>:<path>`) or to move the whole brandbook 
 | Redrawing a brandbook to add one screen | Add an area; see Extending |
 | Every screen on one long page | The shell pages by feature, screen, group and component; keep data in the platform files |
 | Fonts and images read from the app repo by `../../` | Copy them into `<platform>/assets/` |
+| Stored screenshots as PNG | Lossless WebP, a third the size and the same pixels; `node server/webp.ts` converts a folder and rewrites its paths |
+| Checked the layout at one window width; a card that squeezes its title to a word a line, tags that spill into the next card | `check.ts --all` lays every page out at 1024 to 2560 wide and fails on it; fix the CSS until it passes |
 | Drew a landscape app in portrait: an iPad game in a phone-shaped frame, its layout squeezed | RECON reads the supported orientations; a landscape-only app's `Foundations.device` is wider than tall |
 | The screen's gradient squeezed into a short component demo | `wide`, which slices the ground at phone size |
 | "Opened it" with no `open` run | Start the server, then `open` the URL |

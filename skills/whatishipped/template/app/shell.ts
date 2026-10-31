@@ -20,7 +20,7 @@ import { navigationPage } from './pages/navigation.ts';
 import type { Page } from './pages/page.ts';
 import { featurePage, screenPage, screensPage } from './pages/screens.ts';
 import { search } from './search.ts';
-import { closed, Ground, grounds } from './types.ts';
+import { closed, Ground, grounds, View, views } from './types.ts';
 import type { Foundations, Group, Index, Journey, Screen } from './types.ts';
 import { esc, hydrate, resetLazy, url } from './ui.ts';
 
@@ -50,7 +50,9 @@ if (platform) {
 }
 draw();
 addEventListener('popstate', draw);
+addEventListener('resize', setZoom);
 document.addEventListener('click', follow);
+document.addEventListener('click', show);
 document.addEventListener('keydown', keys);
 
 /* The platform's files in the order its page always ran them: icons, frame, foundations, components, areas, journeys. */
@@ -232,7 +234,32 @@ function wire(app: HTMLElement) {
   setZoom();
 }
 
-function setZoom() { document.documentElement.style.setProperty('--zoom', localStorage.getItem('brandbook-zoom') ?? '0.65'); }
+/* The phone size chosen, but never a phone wider than the page: a tablet in a narrow window scales down to fit. */
+function setZoom() {
+  const chosen = Number(localStorage.getItem('brandbook-zoom') ?? 0.65);
+  const main = document.querySelector<HTMLElement>('.b-main');
+  const pad = main ? getComputedStyle(main) : null;
+  const room = main && pad ? main.clientWidth - parseFloat(pad.paddingLeft) - parseFloat(pad.paddingRight) : 0;
+  const fit = m && room > 0 ? Math.floor((room / m.F.device.width) * 1000) / 1000 : chosen;
+  document.documentElement.style.setProperty('--zoom', String(Math.min(chosen, fit)));
+}
+
+/*
+ * What a state shows (App, Drawing, Diff), and Compare, which sets every state with a screenshot of the app beside its
+ * drawing and back to what each shows by itself.
+ */
+function show(e: MouseEvent) {
+  const target = e.target as HTMLElement;
+  const pick = target.closest<HTMLElement>('[data-show]');
+  const figure = pick?.closest<HTMLElement>('.b-phone');
+  if (pick && figure) { figure.dataset.view = views.parse(pick.dataset.show, View.drawing); return; }
+  const all = target.closest<HTMLElement>('[data-compare]');
+  if (!all) return;
+  const on = all.getAttribute('aria-pressed') !== 'true';
+  all.setAttribute('aria-pressed', String(on));
+  localStorage.setItem('brandbook-compare', on ? '1' : '');
+  for (const f of document.querySelectorAll<HTMLElement>('.b-phone[data-look]')) f.dataset.view = on ? View.both : views.parse(f.dataset.look, View.drawing);
+}
 
 /* A link inside this platform redraws in place; one to another platform, or out, loads as usual. */
 function follow(e: MouseEvent) {

@@ -11,7 +11,8 @@
  * --ios takes a simulator's UDID, or booted: every booted one, the runner's parallel clones too, looked up again as the
  * run boots more. --android takes an adb serial, or all. Name the device when other simulators, emulators or phones
  * are up, or their screens are captured too. --every sets the poll in ms (700).
- * Writes <out>/NNNN.png and <out>/frames.json, [{ file, device, at, test, line }], adding to an earlier run's.
+ * Writes <out>/NNNN.webp (the PNG the device hands over, stored as lossless WebP at once) and <out>/frames.json,
+ * [{ file, device, at, test, line }], adding to an earlier run's. Needs libwebp's cwebp (brew install webp).
  * The command runs unchanged, from the current folder; its exit code is this one's, or 1 when no frame was kept.
  */
 import { execFile, execFileSync, spawn } from 'node:child_process';
@@ -22,11 +23,13 @@ import { join } from 'node:path';
 import { promisify } from 'node:util';
 import { System } from '../app/types.ts';
 import { decode, grid } from './png.ts';
+import { needWebp, toWebp } from './webp.ts';
 
 type Device = { kind: System; id: string; set: string | null };
 type Frame = { file: string; device: string; at: string; test: string | null; line: string };
 
 const sh = promisify(execFile);
+needWebp();
 const argv = process.argv.slice(2);
 const dash = argv.indexOf('--');
 const own = dash >= 0 ? argv.slice(0, dash) : argv;
@@ -157,8 +160,8 @@ async function poll(d: Device) {
   if (!keep) return;
   if (!settled) s.moving = null;
   s.kept = [...s.kept.slice(-(RECENT - 1)), sig];
-  const file = `${String(frames.length + 1).padStart(4, '0')}.png`;
-  writeFileSync(join(out as string, file), png);
+  const file = `${String(frames.length + 1).padStart(4, '0')}.webp`;
+  writeFileSync(join(out as string, file), await toWebp(png));
   const named = tests.get(key) ?? test;
   frames.push({ file, device: key, at: new Date().toISOString(), test: named, line });
   writeFileSync(index, `${JSON.stringify(frames, null, 1)}\n`);

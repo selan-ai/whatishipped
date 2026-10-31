@@ -98,7 +98,7 @@ kbd { font: 11px var(--b-mono); padding: 2px 6px; border-radius: 5px; background
 .b-cards--two { grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); }
 .b-card { display: flex; flex-direction: column; gap: 4px; padding: 14px; border-radius: 16px; background: var(--b-surface); border: 1px solid var(--b-line); text-decoration: none; min-width: 0; }
 a.b-card:hover { border-color: rgba(139, 108, 255, 0.6); background: #1a1e26; }
-.b-card__title { margin-top: 8px; font-size: 15px; font-weight: 650; }
+.b-card__title { margin-top: 8px; font-size: 15px; font-weight: 650; overflow-wrap: anywhere; }
 .b-mono-title { font-family: var(--b-mono); font-size: 13.5px; color: var(--b-accent-text); }
 .b-card__meta { font-size: 12.5px; color: var(--b-muted); }
 .b-card__list { margin-top: 4px; font-size: 12px; color: var(--b-dim); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -134,16 +134,17 @@ a.b-chip:hover { border-color: var(--b-accent); color: var(--b-text); }
 .b-table td { padding: 10px 12px; border-bottom: 1px solid var(--b-line); vertical-align: top; }
 .b-table a { color: var(--b-accent-text); text-decoration: none; }
 
-/* Drawings that wait to be scrolled to; phones at a fraction of their size. */
+/* Drawings that wait to be scrolled to; phones at a fraction of their size. A drawing's absolute or fixed pieces stay
+   inside the box that clips it (contain: paint), so none runs past the page. */
 .b-lazy:not(.b-lazy--on) { background: rgba(255, 255, 255, 0.025); border-radius: 12px; }
-.b-mini { flex-shrink: 0; overflow: hidden; border-radius: calc(46px * var(--mini)); }
+.b-mini { flex-shrink: 0; overflow: hidden; contain: paint; border-radius: calc(46px * var(--mini)); }
 .b-mini > * { zoom: var(--mini); }
 .b-mini .phone { box-shadow: none; }
 .b-thumbs { display: flex; flex-wrap: wrap; gap: 26px 22px; }
 .b-thumb { display: flex; flex-direction: column; gap: 2px; text-decoration: none; }
 .b-thumb .b-mini { outline: 1px solid var(--b-line-2); }
 .b-thumb:hover .b-mini { outline: 2px solid var(--b-accent); outline-offset: 3px; }
-.b-thumb__name { margin-top: 8px; font-size: 13.5px; font-weight: 600; }
+.b-thumb__name { margin-top: 8px; font-size: 13.5px; font-weight: 600; overflow-wrap: anywhere; }
 .b-thumb__n { font-size: 12px; color: var(--b-muted); }
 .b-feature__thumbs, .b-journey__thumbs { display: flex; gap: 8px; padding: 12px; margin: -2px -2px 0; border-radius: 12px; background: rgba(0, 0, 0, 0.25); overflow: hidden; }
 /* A landscape device's thumbnails are as wide as standing up (ui.ts, mini) and wrap into rows rather than run off the card. */
@@ -154,13 +155,27 @@ a.b-chip:hover { border-color: var(--b-accent); color: var(--b-text); }
 .b-jump a { flex-shrink: 0; padding: 4px 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.05); font-size: 12px; color: var(--b-muted); text-decoration: none; white-space: nowrap; }
 .b-jump a:hover { color: var(--b-text); background: var(--b-accent-soft); }
 .b-phones { display: flex; flex-wrap: wrap; gap: 44px 40px; }
-.b-phone { margin: 0; width: calc(var(--phone-w) * var(--zoom)); scroll-margin-top: calc(var(--top-h) + 70px); }
-.b-phone:has(.phone--turned) { width: calc(var(--phone-h) * var(--zoom)); }
-.b-phone__frame { zoom: var(--zoom); }
-/* The app beside the drawing; where the two do not fit the page side by side (a landscape tablet), the drawing goes under. */
-.b-phone--pair { width: calc((var(--phone-w) * (var(--shots) + 1) + 40px * var(--shots)) * var(--zoom)); max-width: 100%; }
-.b-phone--pair:has(.phone--turned) { width: calc((var(--phone-h) * (var(--shots) + 1) + 40px * var(--shots)) * var(--zoom)); }
-.b-phone--pair .b-phone__frame { display: flex; flex-wrap: wrap; gap: 40px; }
+/* A state is as wide as what it drew (a phone the board draws wider than the device takes its own width), the caption
+   wrapping under it; before it draws, as wide as the device. */
+.b-phone { margin: 0; width: min-content; min-width: calc(var(--phone-w) * var(--zoom)); scroll-margin-top: calc(var(--top-h) + 70px); }
+.b-phone:has(.phone--turned) { min-width: calc(var(--phone-h) * var(--zoom)); }
+.b-phone__frame { zoom: var(--zoom); display: flex; flex-wrap: wrap; gap: 40px; }
+/* What a state shows (data-view): the drawing; the app's screenshot; the drawing greyed with what differs in red; or the
+   app beside the drawing, the drawing going under where the two do not fit the page side by side (a landscape tablet). */
+.b-phone[data-view="drawing"] .b-shot, .b-phone[data-view="diff"] .b-shot, .b-phone[data-view="app"] .b-drawn { display: none; }
+.b-drawn { position: relative; flex-shrink: 0; }
+.b-mask { display: none; position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.b-phone[data-view="diff"] .b-mask { display: block; }
+.b-phone[data-view="diff"] .b-drawn .phone { filter: grayscale(1) brightness(0.55); }
+.b-phone[data-view="both"] { width: calc((var(--phone-w) * (var(--shots) + 1) + 40px * var(--shots)) * var(--zoom)); max-width: 100%; }
+.b-phone[data-view="both"]:has(.phone--turned) { width: calc((var(--phone-h) * (var(--shots) + 1) + 40px * var(--shots)) * var(--zoom)); }
+.b-phone__tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-top: 4px; }
+.b-view button { padding: 3px 9px; font-size: 11.5px; }
+.b-phone[data-view="app"] [data-show="app"], .b-phone[data-view="drawing"] [data-show="drawing"], .b-phone[data-view="diff"] [data-show="diff"] { background: rgba(255, 255, 255, 0.12); color: var(--b-text); }
+.b-phone__both { display: none; font-size: 12px; }
+.b-phone[data-view="both"] .b-phone__both { display: inline; }
+.b-btn[aria-pressed="true"] { border-color: var(--b-accent); background: var(--b-accent-soft); color: var(--b-text); }
+button.b-btn { font-family: inherit; cursor: pointer; }
 .b-match { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
 .b-match::before { content: '●'; margin-right: 5px; }
 .b-match--good { background: rgba(52, 199, 89, 0.14); color: #7ee2a0; }
@@ -175,14 +190,14 @@ a.b-chip:hover { border-color: var(--b-accent); color: var(--b-text); }
 .b-phone:target .b-phone__idx { background: var(--b-accent); color: #fff; }
 
 /* Components: previews, stories, the canvas. */
-.b-preview { display: flex; align-items: center; justify-content: center; height: 150px; overflow: hidden; border-radius: 12px; background: var(--screen-ground, #000); background-size: max(100%, var(--phone-w)) var(--phone-h); background-position: 0 -280px; }
+.b-preview { display: flex; align-items: center; justify-content: center; height: 150px; overflow: hidden; contain: paint; border-radius: 12px; background: var(--screen-ground, #000); background-size: max(100%, var(--phone-w)) var(--phone-h); background-position: 0 -280px; }
 .b-preview > .b-lazy { zoom: 0.62; max-width: 100%; }
 .b-stories { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--phone-w) + 50px)), 1fr)); gap: 14px; }
 /* Landscape: two stories a row, as on a phone; one wider than its half takes the row and scales to fit (ui.ts, fit). */
 [data-orientation="landscape"] .b-stories { grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)); }
 .b-story--span { grid-column: 1 / -1; }
 .b-story { display: flex; flex-direction: column; border-radius: 16px; background: var(--b-surface); border: 1px solid var(--b-line); overflow: hidden; }
-.b-story__canvas { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 110px; padding: 24px; overflow: auto; background: var(--screen-ground, #000); background-size: max(100%, var(--phone-w)) var(--phone-h); background-position: 0 -280px; }
+.b-story__canvas { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; min-height: 110px; padding: 24px; overflow: auto; background: var(--screen-ground, #000); background-size: max(100%, var(--phone-w)) var(--phone-h); background-position: 0 -280px; }
 .b-story__label { display: flex; justify-content: space-between; gap: 10px; padding: 10px 14px; font: 12px var(--b-mono); color: var(--b-text-2); text-decoration: none; border-top: 1px solid var(--b-line); }
 .b-story__label span { font-family: var(--b-font); color: var(--b-dim); }
 .b-story__label:hover span { color: var(--b-accent-text); }
@@ -198,11 +213,14 @@ a.b-chip:hover { border-color: var(--b-accent); color: var(--b-text); }
 .b-storylist { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0 22px; }
 .b-storylist a { padding: 4px 10px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); font: 12px var(--b-mono); color: var(--b-muted); text-decoration: none; }
 .b-storylist a.on { background: var(--b-accent); color: #fff; }
-/* A card per screen: its thumbnail (--ref-w wide, from the device's aspect) and at least 200px for its name and states,
-   which go under the thumbnail where the card is narrower. */
+/* A card per screen: its thumbnail (--ref-w wide, from the device's aspect) and its name and states, beside it with at
+   least 200px, else under it; always under it for a landscape device, whose thumbnails are wide. */
 .b-refs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, max(330px, calc(var(--ref-w, 0px) + 240px))), 1fr)); gap: 12px; }
+[data-orientation="landscape"] .b-refs { grid-template-columns: repeat(auto-fill, minmax(min(100%, max(240px, calc(var(--ref-w, 0px) + 26px))), 1fr)); }
 .b-ref { display: flex; flex-wrap: wrap; gap: 14px; padding: 12px; border-radius: 14px; background: var(--b-surface); border: 1px solid var(--b-line); min-width: 0; }
-.b-ref > div:last-child { flex: 1 1 160px; min-width: 0; }
+[data-orientation="landscape"] .b-ref { flex-direction: column; gap: 10px; }
+.b-ref > div:last-child { flex: 1 1 200px; min-width: 0; overflow-wrap: anywhere; }
+[data-orientation="landscape"] .b-ref > div:last-child { flex: none; }
 .b-ref__name { font-weight: 650; text-decoration: none; }
 .b-ref__name:hover { color: var(--b-accent-text); }
 .b-ref__states { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
@@ -215,7 +233,7 @@ a.b-chip:hover { border-color: var(--b-accent); color: var(--b-text); }
 /* Foundations. */
 .b-swgroup .b-h2 { margin-top: 30px; }
 .b-swatches { display: flex; flex-wrap: wrap; gap: 12px; }
-.b-sw { display: flex; flex-direction: column; width: 136px; padding: 8px; border-radius: 14px; text-decoration: none; border: 1px solid transparent; }
+.b-sw { display: flex; flex-direction: column; width: auto; min-width: 136px; max-width: 220px; padding: 8px; border-radius: 14px; text-decoration: none; border: 1px solid transparent; }
 a.b-sw:hover { border-color: var(--b-line-2); background: var(--b-surface); }
 .b-sw__chip { height: 64px; border-radius: 10px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14); }
 .b-sw__name { font: 500 11.5px var(--b-mono); color: var(--b-text-2); margin-top: 8px; overflow-wrap: anywhere; }
@@ -231,7 +249,7 @@ a.b-sw:hover { border-color: var(--b-line-2); background: var(--b-surface); }
 .b-space { display: flex; flex-direction: column; gap: 9px; }
 .b-space__row { display: grid; grid-template-columns: 160px auto 60px; justify-content: start; align-items: center; gap: 12px; }
 .b-space__bar { height: 12px; background: var(--b-accent); border-radius: 3px; }
-.b-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+.b-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
 .b-icon { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 6px 12px; border-radius: 14px; background: var(--b-surface); border: 1px solid var(--b-line); color: var(--b-text-2); text-align: center; }
 .b-icon span { font: 10.5px var(--b-mono); color: var(--b-dim); overflow-wrap: anywhere; }
 .b-icon .b-icon__sym { font-size: 9.5px; opacity: 0.7; }
@@ -249,7 +267,8 @@ a.b-sw:hover { border-color: var(--b-line-2); background: var(--b-surface); }
 .b-track { display: flex; align-items: flex-start; overflow-x: auto; padding: 4px 2px 24px; scrollbar-width: thin; }
 .b-step { flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; padding: 12px; border-radius: 18px; background: var(--b-surface); border: 1px solid var(--b-line); }
 /* --step: the zoom the journey's phones are drawn at (half a portrait phone; as wide as that for a landscape one). */
-.b-step__head { display: flex; gap: 10px; align-items: flex-start; max-width: calc(var(--phone-w) * var(--step, 0.5)); }
+.b-step__head { display: flex; gap: 10px; align-items: flex-start; max-width: calc(var(--phone-w) * var(--step, 0.5)); overflow-wrap: anywhere; }
+.b-step__head > div { min-width: 0; }
 .b-step__head a { font-weight: 650; text-decoration: none; }
 .b-step__head a:hover { color: var(--b-accent-text); }
 .b-step__n { flex-shrink: 0; width: 24px; height: 24px; border-radius: 8px; background: var(--b-accent); color: #fff; display: grid; place-items: center; font-size: 12px; font-weight: 700; }
