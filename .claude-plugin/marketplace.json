@@ -1,7 +1,7 @@
 {
   "name": "whatishipped",
   "description": "Your app's UI as it ships: a Claude Code skill that recreates every screen, state, component and journey of an iOS or Android app or a website (a web front end's routes and components) from its code, and checks each drawing against the app's own screenshots.",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "owner": {
     "name": "Selan",
     "url": "https://selan.ai"
