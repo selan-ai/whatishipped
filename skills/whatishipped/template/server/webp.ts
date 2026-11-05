@@ -114,10 +114,11 @@ const files = (dir: string): string[] => readdirSync(dir, { recursive: true, wit
 
 /*
  * The PNGs and JPEGs under each folder, as lossless WebP beside them; the originals deleted. Returns each converted
- * file (absolute, original name) and the bytes before and after.
+ * file (absolute, original name) and the bytes before and after. Needs cwebp only when there is one to convert.
  */
 export async function convert(folders: string[]) {
   const list = folders.flatMap(files).filter((f) => RASTER.test(f));
+  if (list.length) needWebp();
   let before = 0;
   let after = 0;
   await pool(list, async (file) => {

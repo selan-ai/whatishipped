@@ -13,9 +13,8 @@ import { stripTypeScriptTypes } from 'node:module';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import type { Index } from '../app/types.ts';
 import { readBrandbook } from './board.ts';
-import { convert, needWebp, rewrite } from './webp.ts';
+import { convert, rewrite } from './webp.ts';
 
-needWebp();
 const root = resolve(import.meta.dirname, '..');
 const out = resolve(process.argv[2] ?? join(root, 'dist'));
 const index = await readBrandbook(root);
