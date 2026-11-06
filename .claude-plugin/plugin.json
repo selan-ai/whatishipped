@@ -16,6 +16,8 @@
     "android",
     "swiftui",
     "jetpack-compose",
+    "web",
+    "playwright",
     "claude-code",
     "skill"
   ]
